@@ -1,0 +1,1435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MBE Bihorel — Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e30613; --red-d:#b0040f;
+  --ink:#121212; --ink-2:#1d1b19;
+  --kraft:#c89b62; --kraft-l:#e7cfa7; --cream:#f6efe4;
+  --muted:#8a8178; --line:rgba(255,255,255,.1);
+  --radius:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--cream);font-family:Inter,system-ui,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,.display{font-family:Unbounded,Inter,sans-serif;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;z-index:200;background:var(--ink);display:grid;place-items:center;transition:opacity .8s,visibility .8s}
+#loader.done{opacity:0;visibility:hidden}
+.ld{display:flex;flex-direction:column;align-items:center;gap:34px;perspective:700px}
+.lcube{width:72px;height:72px;position:relative;transform-style:preserve-3d;animation:lspin 2.2s cubic-bezier(.6,0,.4,1) infinite}
+.lcube div{position:absolute;inset:0;background:var(--kraft);border:1px solid #7a5a33}
+.lcube .f1{transform:translateZ(36px)}.lcube .f2{transform:rotateY(180deg) translateZ(36px)}
+.lcube .f3{transform:rotateY(90deg) translateZ(36px)}.lcube .f4{transform:rotateY(-90deg) translateZ(36px)}
+.lcube .f5{transform:rotateX(90deg) translateZ(36px);background:linear-gradient(90deg,var(--kraft) 38%,var(--kraft-l) 38% 62%,var(--kraft) 62%)}
+.lcube .f6{transform:rotateX(-90deg) translateZ(36px)}
+@keyframes lspin{0%{transform:rotateX(-24deg) rotateY(0)}100%{transform:rotateX(-24deg) rotateY(360deg)}}
+.ld-txt{font-family:Unbounded;font-size:13px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.ld-txt b{color:var(--cream);font-weight:600;display:inline-block;min-width:3.2ch;text-align:right}
+
+#bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--red);z-index:80}
+
+/* ---------- cursor ---------- */
+.cring{position:fixed;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border:1px solid rgba(246,239,228,.45);border-radius:50%;pointer-events:none;z-index:150;transition:width .25s,height .25s,margin .25s,border-color .25s,background .25s;display:none}
+.cring.big{width:70px;height:70px;margin:-35px 0 0 -35px;border-color:var(--red);background:rgba(227,6,19,.08)}
+@media (pointer:fine){.cring{display:block}}
+
+/* ---------- concept banner ---------- */
+.concept{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(18,18,18,.85);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:99px;padding:8px 16px;font-size:12px;color:var(--muted);white-space:nowrap}
+.concept b{color:var(--cream);font-weight:600}
+
+/* ---------- nav ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:20px clamp(16px,4vw,48px);transition:background .4s,padding .4s}
+nav.solid{background:rgba(18,18,18,.78);backdrop-filter:blur(14px);padding-top:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:Unbounded;font-weight:800;font-size:15px}
+.brand i{width:30px;height:30px;border-radius:8px;background:var(--red);display:grid;place-items:center;font-style:normal;font-size:11px}
+.brand small{display:block;font-family:Inter;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav-links{display:flex;gap:26px;font-size:14px;color:#cfc6bb}
+.nav-links a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-weight:600;font-size:14px;padding:12px 20px;border-radius:99px;border:0;cursor:pointer;transition:transform .25s,background .25s;position:relative}
+.btn:hover{background:var(--red-d)}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.25)}
+.btn.ghost:hover{background:rgba(255,255,255,.08)}
+@media(max-width:960px){.nav-links{display:none}}
+
+/* ---------- hero 3D ---------- */
+.scene{height:360vh;position:relative}
+.sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.glow{position:absolute;inset:0;background:radial-gradient(60% 50% at 65% 55%,rgba(227,6,19,.18),transparent 70%),radial-gradient(40% 40% at 20% 20%,rgba(200,155,98,.12),transparent 70%);pointer-events:none}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.hero-copy{position:absolute;left:clamp(16px,6vw,96px);top:50%;transform:translateY(-50%);max-width:600px;z-index:2}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--kraft-l);margin-bottom:22px}
+.kicker::before{content:"";width:28px;height:1px;background:var(--kraft)}
+.steps{display:grid}
+.step{grid-area:1/1;white-space:nowrap;font-size:clamp(38px,5.6vw,84px);font-weight:800;line-height:.95;opacity:0;transform:translateY(40px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1),filter .6s;filter:blur(6px)}
+.step.on{opacity:1;transform:none;filter:none}
+.step em{font-style:normal;color:var(--red)}
+.step span{display:block;-webkit-text-stroke:1.5px var(--cream);color:transparent;margin-top:.08em}
+.hero-sub{margin-top:24px;color:#cfc6bb;font-size:17px;line-height:1.6;max-width:440px}
+.hero-cta{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap}
+.progress{position:absolute;right:clamp(16px,4vw,48px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:2}
+.progress b{width:3px;height:36px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden;position:relative}
+.progress b i{position:absolute;left:0;right:0;top:0;height:0;background:var(--red)}
+.chips{position:absolute;inset:0;pointer-events:none;z-index:2}
+.chip{position:absolute;background:rgba(246,239,228,.95);color:var(--ink);border-radius:16px;padding:12px 16px;font-size:13px;font-weight:600;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;transform:translateY(20px) scale(.9);transition:all .6s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;gap:10px}
+.chip i{width:28px;height:28px;border-radius:8px;background:var(--red);color:#fff;display:grid;place-items:center;font-style:normal;font-size:14px}
+.chip.on{opacity:1;transform:none}
+.scroll-hint{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px;transition:opacity .4s}
+.scroll-hint::after{content:"";width:1px;height:40px;background:linear-gradient(var(--cream),transparent);animation:drip 1.8s infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+@media(max-width:860px){
+  .hero-copy{top:auto;bottom:110px;transform:none;right:16px}
+  .hero-sub{display:none}
+  .progress{display:none}
+  .chip{font-size:12px;padding:9px 12px}
+  .scroll-hint{display:none}
+  .brand small{display:none}
+  nav .btn{padding:10px 14px;font-size:13px}
+  .concept{font-size:11px;padding:6px 12px}
+}
+
+/* ---------- generic sections ---------- */
+section.block{position:relative;padding:clamp(80px,12vw,160px) clamp(16px,6vw,96px)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:18px}
+.h2{font-size:clamp(32px,5vw,68px);font-weight:800;line-height:1;max-width:900px}
+.h2 .out{-webkit-text-stroke:1.5px var(--stroke,var(--cream));color:transparent}
+.lead{margin-top:22px;color:#b9b0a5;font-size:17px;line-height:1.65;max-width:560px}
+.reveal{opacity:0;transform:translateY(50px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* marquee */
+.marquee{border-block:1px solid var(--line);overflow:hidden;padding:22px 0;background:var(--ink-2)}
+.track{display:flex;gap:48px;width:max-content;animation:slide 30s linear infinite;font-family:Unbounded;font-weight:600;font-size:clamp(18px,2.4vw,30px);color:var(--kraft-l)}
+.track span{display:flex;align-items:center;gap:48px}
+.track span::after{content:"✦";color:var(--red);font-size:.7em}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px;perspective:1000px}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}}
+.stat{padding:30px 26px;border-radius:var(--radius);border:1px solid var(--line);background:linear-gradient(160deg,#211e1b,#161412);opacity:0;transform:rotateX(55deg) translateY(60px);transform-origin:50% 100%;transition:opacity 1s,transform 1.1s cubic-bezier(.2,.8,.2,1)}
+.stat.in{opacity:1;transform:none}
+.stat b{font-family:Unbounded;font-weight:800;font-size:clamp(46px,5.6vw,80px);display:block;line-height:1;margin-bottom:14px}
+.stat b sup{font-size:.38em;color:var(--red);margin-left:4px}
+.stat span{color:#b9b0a5;font-size:14px;line-height:1.5;display:block}
+
+/* services */
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:64px;perspective:1200px}
+.card{position:relative;border-radius:var(--radius);padding:30px;min-height:340px;background:linear-gradient(160deg,#211e1b,#161412);border:1px solid var(--line);transform-style:preserve-3d;transition:transform .2s ease-out,border-color .3s;overflow:hidden;display:flex;flex-direction:column}
+.card:hover{border-color:rgba(227,6,19,.5)}
+.card .shine{position:absolute;inset:0;background:radial-gradient(400px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.08),transparent 40%);pointer-events:none}
+.card .num{font-family:Unbounded;font-size:13px;color:var(--muted)}
+.card .ico{width:64px;height:64px;margin:28px 0 24px;transform:translateZ(40px)}
+.card h3{font-size:22px;font-weight:600;margin-bottom:12px;transform:translateZ(30px)}
+.card p{color:#b9b0a5;font-size:15px;line-height:1.6;transform:translateZ(20px)}
+.card ul{list-style:none;margin-top:auto;padding-top:22px;display:flex;flex-wrap:wrap;gap:6px}
+.card li{font-size:12px;padding:6px 10px;border-radius:99px;border:1px solid var(--line);color:#d8cfc3}
+.card.feat{background:linear-gradient(160deg,var(--red),#8f030c);border-color:transparent}
+.card.feat p,.card.feat .num{color:rgba(255,255,255,.8)}
+.card.feat li{border-color:rgba(255,255,255,.3);color:#fff}
+
+/* globe */
+.globe-sec{display:grid;grid-template-columns:1fr 1.25fr;gap:32px;align-items:center;background:radial-gradient(70% 60% at 75% 50%,rgba(227,6,19,.08),transparent 70%)}
+@media(max-width:960px){.globe-sec{grid-template-columns:1fr}}
+.globe-wrap{position:relative;width:100%;max-width:760px;aspect-ratio:1;margin-inline:auto;cursor:grab;touch-action:pan-y}
+.globe-wrap:active{cursor:grabbing}
+#globe{position:absolute;inset:0;width:100%;height:100%;-webkit-mask-image:radial-gradient(closest-side,#000 80%,transparent 100%);mask-image:radial-gradient(closest-side,#000 80%,transparent 100%)}
+.glabel{position:absolute;left:0;top:0;font-size:11px;font-weight:600;letter-spacing:.04em;padding:4px 9px;border-radius:99px;background:rgba(18,18,18,.8);border:1px solid var(--line);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .35s}
+.glabel.origin{background:var(--red);border-color:transparent;color:#fff}
+.zones{display:flex;gap:8px;margin-top:34px;flex-wrap:wrap}
+.zone{padding:11px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:transparent;font-weight:600;font-size:14px;cursor:pointer;transition:background .25s,color .25s}
+.zone:hover{background:rgba(255,255,255,.07)}
+.zone.on{background:var(--cream);color:var(--ink)}
+.zone-info{margin-top:22px;color:#b9b0a5;min-height:4.8em;font-size:15px;line-height:1.6;max-width:460px}
+.zone-info b{color:var(--cream)}
+.drag-hint{font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:.06em}
+
+/* route */
+.route-wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:center;margin-top:48px}
+@media(max-width:900px){.route-wrap{grid-template-columns:1fr}}
+.route-steps{display:flex;flex-direction:column;gap:6px}
+.rs{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--line);opacity:.35;transition:opacity .5s}
+.rs.on{opacity:1}
+.rs b{font-family:Unbounded;color:var(--red);font-size:14px;min-width:28px}
+.rs h4{font-size:18px;margin-bottom:6px;font-weight:600}
+.rs p{color:#b9b0a5;font-size:14px;line-height:1.55}
+.map{position:relative;aspect-ratio:1.25;border-radius:var(--radius);background:radial-gradient(circle at 30% 40%,#26211c,#141210);border:1px solid var(--line);overflow:hidden}
+.map svg{width:100%;height:100%}
+.map .dots circle{fill:rgba(231,207,167,.18)}
+#routePath{stroke:var(--red);stroke-width:2.5;fill:none;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(227,6,19,.8))}
+.pin{fill:var(--red)}
+.pulse{fill:none;stroke:var(--red);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(3);opacity:0}}
+.map-label{font-family:Unbounded;font-size:13px;fill:var(--cream)}
+.carriers{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.carriers span{font-family:Unbounded;font-weight:600;font-size:13px;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:#d8cfc3}
+
+/* carousel 3D */
+.ring-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.ring-nav{display:flex;gap:10px}
+.ring-nav button{width:54px;height:54px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:transparent;cursor:pointer;font-size:20px;transition:background .25s}
+.ring-nav button:hover{background:var(--red);border-color:var(--red)}
+.ring-stage{height:560px;perspective:1500px;display:grid;place-items:center;margin-top:20px;cursor:grab;touch-action:pan-y;overflow:hidden;-webkit-user-select:none;user-select:none}
+.ring-stage:active{cursor:grabbing}
+.ring{position:relative;width:290px;height:390px;transform-style:preserve-3d}
+.p3d{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;padding:28px;display:flex;flex-direction:column;border:1px solid var(--line);background:linear-gradient(165deg,#2a2521,#151311);box-shadow:0 30px 60px rgba(0,0,0,.4);overflow:hidden}
+.p3d::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-90px;background:var(--c,var(--red));opacity:.22;filter:blur(10px)}
+.p3d.red{background:linear-gradient(165deg,#e30613,#7d020a)}
+.p3d.red::before{background:#fff;opacity:.12}
+.p3d.kraft{background:linear-gradient(165deg,#d6ab72,#9c7442);color:var(--ink)}
+.p3d.kraft p{color:#3b2a17}
+.p3d svg{width:70px;height:70px;position:relative}
+.p3d .n{font-family:Unbounded;font-size:12px;opacity:.6;margin-top:auto}
+.p3d h4{font-size:22px;margin:8px 0 10px;position:relative}
+.p3d p{font-size:14px;line-height:1.55;color:#cfc6bb;position:relative}
+.p3d.red p{color:rgba(255,255,255,.85)}
+@media(max-width:600px){.ring{width:220px;height:310px}.ring-stage{height:440px}.p3d{padding:22px}.p3d h4{font-size:18px}}
+
+/* configurateur */
+.cfg{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:56px}
+@media(max-width:960px){.cfg{grid-template-columns:1fr}}
+.cfg-stage{position:relative;min-height:520px;border-radius:var(--radius);background:radial-gradient(circle at 50% 65%,#2c241d,#141210 70%);border:1px solid var(--line);perspective:1100px;overflow:hidden;cursor:grab;touch-action:pan-y}
+.cfg-stage:active{cursor:grabbing}
+.cfg-floor{position:absolute;left:50%;top:50%;width:560px;height:560px;margin:-280px 0 0 -280px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 40px);transform:rotateX(72deg) translateZ(-150px);mask-image:radial-gradient(circle,#000 30%,transparent 70%);pointer-events:none}
+.cbox{position:absolute;left:50%;top:52%;width:0;height:0;transform-style:preserve-3d}
+.fc{position:absolute;left:0;top:0;background:linear-gradient(135deg,#d2a46b,#b98a52);border:1px solid rgba(90,61,28,.55);display:grid;place-items:center;font-family:Unbounded;font-size:11px;font-weight:600;color:#5a3d1c;transition:width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1),transform .35s cubic-bezier(.2,.8,.2,1);overflow:hidden;white-space:nowrap}
+.fc.top{background:linear-gradient(90deg,transparent 40%,rgba(246,239,228,.55) 40% 60%,transparent 60%),linear-gradient(135deg,#dcb17a,#c2945b)}
+.fc.front::after{content:"";position:absolute;right:10%;bottom:12%;width:30%;height:26%;background:#fbf8f2;border-top:4px solid var(--red);opacity:.9}
+.cfg-ref{position:absolute;left:18px;bottom:16px;font-size:12px;color:var(--muted)}
+.cfg-ctrl{border-radius:var(--radius);padding:30px;background:var(--ink-2);border:1px solid var(--line)}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.presets button{padding:8px 13px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:transparent;font-size:13px;cursor:pointer}
+.presets button:hover{background:rgba(255,255,255,.08)}
+.rg{margin-bottom:18px}
+.rg label{display:flex;justify-content:space-between;font-size:14px;color:#cfc6bb;margin-bottom:8px}
+.rg label b{font-family:Unbounded;color:var(--cream);font-size:14px}
+.rg input{width:100%;accent-color:var(--red);height:20px}
+.outs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.o{padding:16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.o small{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+.o b{font-family:Unbounded;font-size:22px}
+.o.hl{background:var(--red);border-color:transparent}
+.o.hl small{color:rgba(255,255,255,.8)}
+.verdict{margin-top:16px;font-size:14px;color:#cfc6bb;line-height:1.5}
+.verdict b{color:var(--cream)}
+.cfg-note{margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+
+/* duo impression / domiciliation */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:56px}
+@media(max-width:960px){.duo{grid-template-columns:1fr}}
+.stage{position:relative;height:460px;border-radius:var(--radius);background:var(--ink-2);border:1px solid var(--line);perspective:1200px;overflow:hidden;display:grid;place-items:center}
+.stage-cap{position:absolute;left:26px;bottom:24px;right:26px;z-index:3}
+.stage-cap h3{font-size:22px;margin-bottom:6px}
+.stage-cap p{color:#b9b0a5;font-size:14px;line-height:1.5}
+.fan{position:relative;width:0;height:0;transform-style:preserve-3d;transition:transform .4s ease-out;margin-top:-80px}
+.sheet{position:absolute;border-radius:6px;box-shadow:0 30px 60px rgba(0,0,0,.5);transition:transform 1.1s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;overflow:hidden}
+.sheet.poster{width:200px;height:280px;left:-100px;top:-140px;background:var(--red);color:#fff;padding:20px;transform:rotateX(55deg) rotateZ(-28deg)}
+.sheet.poster b{font-family:Unbounded;font-size:34px;line-height:.95;display:block}
+.sheet.poster small{position:absolute;bottom:18px;left:20px;font-size:11px;letter-spacing:.12em;opacity:.85}
+.sheet.poster i{position:absolute;right:-40px;bottom:40px;width:140px;height:140px;border-radius:50%;border:16px solid rgba(255,255,255,.2)}
+.sheet.flyer{width:160px;height:226px;left:-80px;top:-113px;background:var(--cream);color:var(--ink);padding:16px;transform:rotateX(55deg) rotateZ(-28deg) translateZ(12px);transition-delay:.08s}
+.sheet.flyer i{display:block;width:70px;height:70px;border-radius:50%;background:var(--kraft);margin-bottom:12px}
+.sheet.flyer b{font-family:Unbounded;font-size:14px;display:block;margin-bottom:8px}
+.sheet.flyer u{display:block;height:5px;background:rgba(0,0,0,.12);border-radius:3px;margin-top:6px;text-decoration:none}
+.sheet.bcard{width:190px;height:108px;left:-95px;top:-54px;background:#161412;border:1px solid #2c2722;padding:16px;transform:rotateX(55deg) rotateZ(-28deg) translateZ(24px);transition-delay:.16s}
+.sheet.bcard b{font-family:Unbounded;font-size:15px;color:var(--cream)}
+.sheet.bcard b::after{content:".";color:var(--red)}
+.sheet.bcard small{display:block;color:var(--muted);font-size:10px;margin-top:22px;line-height:1.5}
+.stage.open .poster{transform:translate(-115px,-10px) rotateY(22deg) rotateZ(-7deg)}
+.stage.open .flyer{transform:translate(35px,0) translateZ(70px) rotateY(-8deg) rotateZ(4deg)}
+.stage.open .bcard{transform:translate(110px,115px) translateZ(150px) rotateY(-26deg) rotateZ(9deg)}
+@media(max-width:600px){.fan{transform:scale(.72)}}
+
+.flip{width:min(78%,360px);aspect-ratio:1.55;perspective:1000px;margin-top:-90px;position:relative;z-index:2;cursor:pointer}
+.flip-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.3,.7,.2,1)}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.flip-f,.flip-b{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:22px;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.flip-f{background:linear-gradient(150deg,#2a2521,#151311);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
+.flip-f b{font-family:Unbounded;font-size:22px;line-height:1.1}
+.flip-f small{color:var(--muted);font-size:12px}
+.flip-b{background:var(--cream);color:var(--ink);transform:rotateY(180deg);font-size:14px;line-height:1.55;display:flex;flex-direction:column;justify-content:flex-end}
+.flip-b::before{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(155deg,transparent 49.5%,rgba(0,0,0,.08) 50%,transparent 50.5%),linear-gradient(25deg,transparent 49.5%,rgba(0,0,0,.08) 50%,transparent 50.5%);background-size:100% 55%;background-repeat:no-repeat}
+.stamp{position:absolute;right:18px;top:18px;width:58px;height:66px;background:var(--red);color:#fff;font-family:Unbounded;font-size:10px;display:grid;place-items:center;text-align:center;outline:3px dashed var(--cream);outline-offset:-6px}
+.flip-b b{font-family:Unbounded;font-size:13px}
+.env{position:absolute;width:64px;height:42px;background:var(--cream);border-radius:4px;opacity:.85;animation:float3d 7s ease-in-out infinite}
+.env::after{content:"";position:absolute;inset:0;background:linear-gradient(150deg,transparent 49%,rgba(0,0,0,.15) 50%,transparent 51%),linear-gradient(30deg,transparent 49%,rgba(0,0,0,.15) 50%,transparent 51%);background-size:100% 60%;background-repeat:no-repeat}
+@keyframes float3d{0%,100%{transform:translate3d(0,0,0) rotateX(20deg) rotateZ(-10deg)}50%{transform:translate3d(10px,-24px,60px) rotateX(-15deg) rotateZ(12deg)}}
+
+/* reviews */
+.reviews{background:var(--cream);color:var(--ink);--stroke:var(--ink)}
+.rv-row{display:flex;gap:18px;margin-top:56px;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.rv-track{display:flex;gap:18px;animation:slide 45s linear infinite;width:max-content}
+.rv-row:hover .rv-track{animation-play-state:paused}
+.rv{width:340px;flex:none;background:#fff;border-radius:var(--radius);padding:26px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.stars{color:#f5a623;letter-spacing:2px;font-size:15px}
+.rv p{font-size:16px;line-height:1.55;margin:14px 0 18px;font-weight:500}
+.rv small{color:#7a7068;font-size:13px}
+
+/* faq */
+.faq{max-width:920px;margin-top:48px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:26px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;font-family:Unbounded;font-weight:600;font-size:clamp(16px,1.9vw,21px)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--red);font-size:28px;transition:transform .3s;flex:none}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 0 26px;color:#b9b0a5;line-height:1.7;max-width:720px}
+
+/* contact */
+.info{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:56px}
+@media(max-width:900px){.info{grid-template-columns:1fr}}
+.panel{border-radius:var(--radius);padding:34px;background:var(--ink-2);border:1px solid var(--line)}
+.status{display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:14px;padding:8px 14px;border-radius:99px;background:rgba(255,255,255,.05)}
+.status i{width:9px;height:9px;border-radius:50%;background:#888}
+.status.open i{background:#2ecc71;box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:ring 1.6s infinite}
+@keyframes ring{to{box-shadow:0 0 0 12px rgba(46,204,113,0)}}
+.hours{margin-top:24px;display:grid;gap:2px}
+.hours div{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px;color:#cfc6bb}
+.hours div.today{color:#fff;font-weight:600}
+.hours div.today span:first-child::before{content:"● ";color:var(--red)}
+.contact-big{font-family:Unbounded;font-size:clamp(26px,3.4vw,42px);font-weight:800;line-height:1.1;margin:16px 0 26px}
+.person{display:flex;align-items:center;gap:14px;margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
+.avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--kraft),var(--red));display:grid;place-items:center;font-family:Unbounded;font-weight:800}
+.person small{color:var(--muted);display:block;font-size:13px}
+
+/* final */
+.final{position:relative;min-height:115vh;overflow:hidden;padding:0 16px;display:flex;justify-content:center;background:linear-gradient(var(--ink),#1a1310)}
+#rain{position:absolute;inset:0;width:100%;height:100%}
+.final-inner{position:relative;z-index:2;text-align:center;padding-top:16vh;pointer-events:none}
+.final-inner .h2{margin:0 auto;font-size:clamp(40px,8vw,120px)}
+.final-inner .btn{pointer-events:auto;margin-top:36px;font-size:16px;padding:18px 30px}
+footer{padding:40px clamp(16px,6vw,96px) 90px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+
+/* ---------- fond 3D fixe ---------- */
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0}
+
+/* ---------- sections épinglées ---------- */
+.pin{position:relative}
+.pin-in{position:sticky;top:0;height:100vh;overflow:hidden;padding:84px clamp(16px,6vw,96px) 40px}
+.pin-in.globe-sec{display:grid;align-items:center}
+.globe-sec .globe-wrap{width:min(100%,76vh)}
+.scroll-tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);letter-spacing:.08em;margin-top:10px}
+.scroll-tag::before{content:"";width:16px;height:24px;border:1.5px solid var(--muted);border-radius:10px;background:radial-gradient(circle at 50% 30%,var(--cream) 2px,transparent 2.5px)}
+.ring-pin{display:flex;flex-direction:column;justify-content:center}
+.ring-pin .ring-stage{height:min(560px,60vh);margin-top:0}
+.ring-count{text-align:center;font-size:14px;color:var(--muted);letter-spacing:.04em}
+.ring-count b{font-family:Unbounded;color:var(--cream);font-size:18px}
+@media(max-width:960px){
+  .pin-in.globe-sec{align-content:center;gap:10px;padding-top:76px}
+  .globe-sec .lead,.globe-sec .drag-hint{display:none}
+  .globe-sec .globe-wrap{width:min(100%,42vh)}
+  .globe-sec .zone-info{min-height:0;font-size:14px;margin-top:12px}
+  .globe-sec .zones{margin-top:18px}
+}
+
+/* ---------- le voyage du colis ---------- */
+.voyage{height:640vh;position:relative;background:#141110}
+.v-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+#vcan{position:absolute;inset:0;width:100%;height:100%}
+.v-ui{position:absolute;left:clamp(16px,6vw,96px);top:50%;transform:translateY(-50%);max-width:430px;z-index:2}
+.v-steps{display:grid;margin-top:8px}
+.vstep{grid-area:1/1;opacity:0;transform:translateY(30px);filter:blur(4px);transition:opacity .6s,transform .6s cubic-bezier(.2,.7,.2,1),filter .6s}
+.vstep.on{opacity:1;transform:none;filter:none}
+.v-n{font-family:Unbounded;font-size:clamp(56px,7vw,100px);font-weight:800;-webkit-text-stroke:1.5px var(--red);color:transparent;line-height:1;display:block}
+.vstep h3{font-size:clamp(26px,3.2vw,44px);font-weight:800;margin:10px 0 14px;line-height:1.05}
+.vstep p{color:#cfc6bb;line-height:1.6;font-size:16px}
+.vstep small{display:block;margin-top:14px;color:var(--muted);font-size:13px;letter-spacing:.04em}
+.v-prog{position:absolute;left:clamp(16px,6vw,96px);right:clamp(16px,6vw,96px);bottom:70px;z-index:2}
+.v-bar{height:2px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden}
+.v-bar i{display:block;height:100%;width:0;background:var(--red)}
+.v-labels{display:flex;justify-content:space-between;margin-top:12px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.v-labels span{transition:color .4s}
+.v-labels span.on{color:var(--cream)}
+@media(max-width:860px){
+  .v-ui{top:auto;bottom:118px;transform:none;right:16px}
+  .vstep p{font-size:14px}
+  .v-labels span{font-size:9px;letter-spacing:.06em}
+}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div id="loader"><div class="ld">
+  <div class="lcube"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div><div class="f5"></div><div class="f6"></div></div>
+  <div class="ld-txt">Emballage en cours <b id="ldn">0</b>%</div>
+</div></div>
+<div id="bar"></div>
+<div class="cring" id="cring"></div>
+<div class="concept"><b>Concept de refonte</b> — maquette Kréalabs, non contractuelle</div>
+
+<nav id="nav">
+  <a class="brand" href="#"><i>MBE</i><div>Bihorel<small>Centre 3481 · Rouen Nord</small></div></a>
+  <div class="nav-links">
+    <a href="#services">Services</a><a href="#voyage">Le voyage</a><a href="#monde">Destinations</a><a href="#simulateur">Simulateur</a><a href="#avis">Avis</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+  </div>
+  <a class="btn" href="#contact">Devis gratuit →</a>
+</nav>
+
+<!-- ============ HERO 3D ============ -->
+<div class="scene" id="scene">
+  <div class="sticky">
+    <canvas id="gl"></canvas>
+    <div class="glow"></div>
+    <div class="grain"></div>
+    <div class="hero-copy">
+      <div class="kicker">Bihorel · Rouen Nord · 76420</div>
+      <div class="steps">
+        <div class="step on">On emballe<em>.</em><span>avec soin</span></div>
+        <div class="step">On expédie<em>.</em><span>sans stress</span></div>
+        <div class="step">Partout<em>.</em><span>vraiment.</span></div>
+      </div>
+      <p class="hero-sub">Colis, objets fragiles, vins, palettes, e-commerce, impression et domiciliation. Un seul comptoir à Bihorel, une équipe qui s'occupe de tout.</p>
+      <div class="hero-cta">
+        <a class="btn" href="#simulateur">Simuler mon colis</a>
+        <a class="btn ghost" href="#services">Voir les services</a>
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip" style="left:58%;top:16%"><i>📦</i>Emballage sur mesure</div>
+      <div class="chip" style="left:76%;top:30%"><i>🍷</i>Envoi de vins</div>
+      <div class="chip" style="left:52%;top:74%"><i>🖼</i>Œuvres & objets fragiles</div>
+      <div class="chip" style="left:78%;top:62%"><i>🌍</i>France · Europe · Monde</div>
+      <div class="chip" style="left:64%;top:87%"><i>✉️</i>Domiciliation</div>
+    </div>
+    <div class="progress"><b><i></i></b><b><i></i></b><b><i></i></b></div>
+    <div class="scroll-hint" id="hint">Scroll</div>
+  </div>
+</div>
+
+<div class="marquee"><div class="track">
+  <span>Envoi de colis</span><span>Objets fragiles</span><span>Vins & spiritueux</span><span>Palettes</span><span>Bagages</span><span>Fulfillment</span><span>Impression</span><span>Domiciliation</span>
+  <span>Envoi de colis</span><span>Objets fragiles</span><span>Vins & spiritueux</span><span>Palettes</span><span>Bagages</span><span>Fulfillment</span><span>Impression</span><span>Domiciliation</span>
+</div></div>
+
+<!-- ============ STATS ============ -->
+<section class="block" style="padding-bottom:0">
+  <div class="eyebrow reveal">En bref</div>
+  <h2 class="h2 reveal">Un comptoir. <span class="out">Toutes</span> les solutions.</h2>
+  <div class="stats">
+    <div class="stat"><b data-to="4">0</b><span>métiers sous le même toit : envoi, logistique, impression, domiciliation</span></div>
+    <div class="stat"><b data-to="5">0</b><span>grands transporteurs pour trouver le meilleur rapport délai / prix</span></div>
+    <div class="stat"><b data-to="35">0<sup>h</sup></b><span>d'ouverture par semaine, du lundi au vendredi</span></div>
+    <div class="stat"><b data-to="1">0</b><span>interlocuteur qui suit votre envoi de A à Z</span></div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section class="block" id="services">
+  <div class="eyebrow reveal">Ce qu'on fait</div>
+  <h2 class="h2 reveal">Quatre métiers. <span class="out">Un seul</span> interlocuteur.</h2>
+  <div class="services">
+    <article class="card feat reveal" data-tilt>
+      <div class="shine"></div><div class="num">01</div>
+      <svg class="ico" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.5"><path d="M8 20 32 8l24 12v24L32 56 8 44z"/><path d="M8 20l24 12 24-12M32 32v24"/><path d="M20 14l24 12" stroke-dasharray="3 3"/></svg>
+      <h3>Envoi de colis</h3>
+      <p>On emballe, on choisit le meilleur transporteur, on suit. Vous déposez, on gère le reste.</p>
+      <ul><li>Standard</li><li>Fragile & art</li><li>Vins</li><li>Bagages</li><li>Palettes</li><li>Import</li></ul>
+    </article>
+    <article class="card reveal" data-tilt>
+      <div class="shine"></div><div class="num">02</div>
+      <svg class="ico" viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><rect x="6" y="30" width="20" height="20" rx="2"/><rect x="26" y="14" width="20" height="36" rx="2"/><path d="M46 50h12M6 50H2"/><circle cx="52" cy="22" r="6"/><path d="M52 28v8"/></svg>
+      <h3>Logistique & e-commerce</h3>
+      <p>Stockage, préparation de commandes, plugin d'expédition branché sur votre boutique.</p>
+      <ul><li>Fulfillment</li><li>Shopify</li><li>WooCommerce</li><li>PrestaShop</li><li>Retours</li></ul>
+    </article>
+    <article class="card reveal" data-tilt>
+      <div class="shine"></div><div class="num">03</div>
+      <svg class="ico" viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><rect x="14" y="6" width="36" height="16"/><rect x="6" y="22" width="52" height="24" rx="4"/><rect x="14" y="38" width="36" height="20"/><path d="M20 46h24M20 52h16"/></svg>
+      <h3>Impression</h3>
+      <p>Cartes, flyers, affiches, papeterie. Vos supports pros, imprimés à deux pas.</p>
+      <ul><li>Print</li><li>Graphisme</li><li>Papeterie</li><li>Emballages perso</li></ul>
+    </article>
+    <article class="card reveal" data-tilt>
+      <div class="shine"></div><div class="num">04</div>
+      <svg class="ico" viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><path d="M10 28a14 14 0 0128 0v26H10z"/><path d="M38 14h12a8 8 0 018 8v32H38"/><path d="M48 14V4h8v6h-8"/><path d="M16 36h16"/></svg>
+      <h3>Domiciliation</h3>
+      <p>Une adresse pro pour votre société ou association, et une boîte aux lettres gérée pour vous.</p>
+      <ul><li>Entreprises</li><li>Associations</li><li>Boîtes aux lettres</li></ul>
+    </article>
+  </div>
+</section>
+
+<!-- ============ LE VOYAGE DU COLIS (épinglé) ============ -->
+<section class="voyage" id="voyage">
+  <div class="v-sticky">
+    <canvas id="vcan"></canvas>
+    <div class="v-ui">
+      <div class="eyebrow">Le voyage d'un colis</div>
+      <div class="v-steps">
+        <div class="vstep on"><span class="v-n">01</span><h3>Un carton à la bonne taille.</h3><p>On part de l'objet, pas l'inverse : le carton est choisi et monté pour lui.</p></div>
+        <div class="vstep"><span class="v-n">02</span><h3>Rien ne bouge.</h3><p>Calage, papier bulle, séparateurs : bouteilles, cadeaux et objets fragiles sont immobilisés.</p></div>
+        <div class="vstep"><span class="v-n">03</span><h3>Fermé, scotché, renforcé.</h3><p>Rabats, adhésif en H : le colis est prêt à encaisser le transport.</p></div>
+        <div class="vstep"><span class="v-n">04</span><h3>Étiqueté et suivi.</h3><p>On compare les transporteurs et on choisit le bon service pour votre délai et votre budget.</p><small>FedEx · UPS · DHL · TNT · GLS</small></div>
+        <div class="vstep"><span class="v-n">05</span><h3>Et c'est parti.</h3><p>France, Europe ou à l'autre bout du monde. Vous suivez votre colis jusqu'à la livraison.</p></div>
+      </div>
+    </div>
+    <div class="v-prog"><div class="v-bar"><i id="vbar"></i></div>
+      <div class="v-labels"><span class="on">Montage</span><span>Calage</span><span>Fermeture</span><span>Étiquette</span><span>Départ</span></div></div>
+  </div>
+</section>
+
+<!-- ============ GLOBE ============ -->
+<section class="pin" id="monde" style="height:340vh"><div class="pin-in globe-sec">
+  <div>
+    <div class="eyebrow reveal">Destinations</div>
+    <h2 class="h2 reveal">De Bihorel <span class="out">au reste</span> du monde.</h2>
+    <p class="lead">Une chaise chez votre cousin à Lyon, un tableau pour Montréal, une caisse de vin pour Tokyo : on trouve la bonne solution, quelle que soit la distance.</p>
+    <div class="zones" id="zones">
+      <button class="zone on" data-z="all">Tout</button>
+      <button class="zone" data-z="fr">France</button>
+      <button class="zone" data-z="eu">Europe</button>
+      <button class="zone" data-z="world">International</button>
+    </div>
+    <p class="zone-info" id="zoneInfo"></p>
+    <p class="drag-hint">↔ Faites tourner le globe</p>
+    <span class="scroll-tag">Scrollez pour changer de zone</span>
+  </div>
+  <div class="globe-wrap" id="globeWrap"><canvas id="globe"></canvas></div>
+</div></section>
+
+<!-- ============ CARROUSEL 3D ============ -->
+<section class="pin" id="specialites" style="height:340vh"><div class="pin-in ring-pin">
+  <div class="ring-head">
+    <div>
+      <div class="eyebrow reveal">Envois spéciaux</div>
+      <h2 class="h2 reveal">Ce que les autres <span class="out">refusent</span>, on l'emballe.</h2>
+    </div>
+    <div class="ring-nav"><button id="rPrev" aria-label="Précédent">←</button><button id="rNext" aria-label="Suivant">→</button></div>
+  </div>
+  <div class="ring-stage" id="ringStage"><div class="ring" id="ring">
+    <div class="p3d red"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.5"><path d="M26 4h12v12c0 4 6 6 6 14v28H20V30c0-8 6-10 6-14z"/><rect x="20" y="36" width="24" height="12" fill="rgba(255,255,255,.25)"/></svg><div class="n">01</div><h4>Vins & spiritueux</h4><p>Calages spécifiques bouteille par bouteille, pour particuliers comme pour domaines.</p></div>
+    <div class="p3d"><svg viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><rect x="6" y="10" width="52" height="42" rx="2"/><rect x="12" y="16" width="40" height="30"/><path d="M12 42l12-12 9 9 7-6 12 9"/><circle cx="42" cy="24" r="4"/></svg><div class="n">02</div><h4>Œuvres d'art</h4><p>Tableaux, sculptures, pièces de collection : caisse sur mesure et protection renforcée.</p></div>
+    <div class="p3d kraft"><svg viewBox="0 0 64 64" fill="none" stroke="#121212" stroke-width="2.5"><path d="M18 6h28l-4 26a10 10 0 01-20 0z"/><path d="M32 42v14M22 58h20"/><path d="M28 12l6 8-4 4 6 6" stroke="#e30613"/></svg><div class="n">03</div><h4>Objets fragiles</h4><p>Vaisselle, verrerie, électronique : on choisit le calage adapté à chaque objet.</p></div>
+    <div class="p3d"><svg viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><rect x="10" y="18" width="44" height="36" rx="5"/><path d="M24 18v-8h16v8M10 32h44M22 54v4M42 54v4"/></svg><div class="n">04</div><h4>Bagages</h4><p>Voyagez léger : vos valises partent devant et vous attendent à l'arrivée.</p></div>
+    <div class="p3d red"><svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.5"><rect x="12" y="14" width="18" height="18"/><rect x="32" y="20" width="20" height="12"/><rect x="18" y="2" width="14" height="12"/><path d="M6 38h52M6 46h52M10 38v14M32 38v14M54 38v14"/></svg><div class="n">05</div><h4>Palettes</h4><p>Gros volumes et envois lourds en messagerie ou affrètement, France et export.</p></div>
+    <div class="p3d"><svg viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><path d="M8 26 32 14l24 12v24L32 62 8 50z"/><path d="M32 2v26M24 20l8 8 8-8"/></svg><div class="n">06</div><h4>Import</h4><p>Vous faites venir de la marchandise de l'étranger ? On gère l'acheminement jusqu'à vous.</p></div>
+    <div class="p3d kraft"><svg viewBox="0 0 64 64" fill="none" stroke="#121212" stroke-width="2.5"><path d="M4 8h8l7 32h32l6-22H15"/><circle cx="24" cy="52" r="4"/><circle cx="46" cy="52" r="4"/><path d="M28 26h18" stroke="#e30613"/></svg><div class="n">07</div><h4>E-commerce</h4><p>Stock, préparation, expédition et retours connectés à votre boutique en ligne.</p></div>
+    <div class="p3d"><svg viewBox="0 0 64 64" fill="none" stroke="#e30613" stroke-width="2.5"><rect x="6" y="14" width="52" height="36" rx="3"/><path d="M6 16l26 20 26-20"/></svg><div class="n">08</div><h4>Plis & documents</h4><p>Contrats, dossiers, originaux : envoi express et suivi pour vos plis importants.</p></div>
+  </div></div>
+  <div class="ring-count" id="ringCount"></div>
+</div></section>
+
+<!-- ============ SIMULATEUR ============ -->
+<section class="block" id="simulateur" style="background:rgba(29,27,25,.78)">
+  <div class="eyebrow reveal">Simulateur</div>
+  <h2 class="h2 reveal">Votre colis, <span class="out">en 3D</span>, avant de venir.</h2>
+  <p class="lead reveal">Entrez les dimensions : on calcule le poids volumétrique, celui que les transporteurs facturent souvent sans prévenir.</p>
+  <div class="cfg">
+    <div class="cfg-stage reveal" id="cfgStage">
+      <div class="cfg-floor"></div>
+      <div class="cbox" id="cbox">
+        <div class="fc front"></div><div class="fc back"></div><div class="fc right"></div><div class="fc left"></div><div class="fc top"></div><div class="fc bottom"></div>
+      </div>
+      <div class="cfg-ref">Glissez pour faire pivoter · 1 carreau = 20 cm</div>
+    </div>
+    <div class="cfg-ctrl reveal">
+      <div class="presets">
+        <button data-p="25,18,4,0.8">Livre</button>
+        <button data-p="35,22,13,1.5">Boîte à chaussures</button>
+        <button data-p="40,30,35,6">6 bouteilles</button>
+        <button data-p="55,35,30,12">Carton déménagement</button>
+        <button data-p="100,80,8,6">Tableau</button>
+      </div>
+      <div class="rg"><label>Longueur <b><span id="vL"></span> cm</b></label><input type="range" id="iL" min="5" max="150" value="40"></div>
+      <div class="rg"><label>Largeur <b><span id="vW"></span> cm</b></label><input type="range" id="iW" min="5" max="120" value="30"></div>
+      <div class="rg"><label>Hauteur <b><span id="vH"></span> cm</b></label><input type="range" id="iH" min="2" max="120" value="25"></div>
+      <div class="rg"><label>Poids réel <b><span id="vK"></span> kg</b></label><input type="range" id="iK" min="0.5" max="50" step="0.5" value="4"></div>
+      <div class="outs">
+        <div class="o"><small>Volume</small><b id="oV">—</b></div>
+        <div class="o"><small>Poids volumétrique</small><b id="oVW">—</b></div>
+        <div class="o"><small>Poids réel</small><b id="oK">—</b></div>
+        <div class="o hl"><small>Poids taxable</small><b id="oT">—</b></div>
+      </div>
+      <p class="verdict" id="verdict"></p>
+      <a class="btn" id="cfgCta" style="margin-top:18px" href="#">Demander un devis avec ces dimensions →</a>
+      <p class="cfg-note">Calcul indicatif : L × l × h / 5000, diviseur courant en express. Il varie selon le transporteur et le service ; le devis exact se fait au comptoir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ IMPRESSION / DOMICILIATION ============ -->
+<section class="block" id="plus">
+  <div class="eyebrow reveal">Et aussi</div>
+  <h2 class="h2 reveal">Plus qu'un <span class="out">point d'envoi</span>.</h2>
+  <div class="duo">
+    <div class="stage reveal" id="fanStage">
+      <div class="fan" id="fan">
+        <div class="sheet poster"><b>GRAND<br>FORMAT</b><i></i><small>AFFICHES · KAKÉMONOS</small></div>
+        <div class="sheet flyer"><i></i><b>Flyers &amp; dépliants</b><u></u><u style="width:80%"></u><u style="width:60%"></u></div>
+        <div class="sheet bcard"><b>Votre marque</b><small>Prénom Nom<br>Fonction · 06 00 00 00 00</small></div>
+      </div>
+      <div class="stage-cap"><h3>Impression</h3><p>Cartes de visite, flyers, affiches et papeterie : vos supports pros, imprimés à deux pas.</p></div>
+    </div>
+    <div class="stage reveal" id="domStage">
+      <div class="env" style="left:12%;top:14%"></div>
+      <div class="env" style="right:14%;top:10%;animation-delay:-2s;transform:scale(.8)"></div>
+      <div class="env" style="right:8%;top:42%;animation-delay:-4.5s"></div>
+      <div class="flip" id="flip">
+        <div class="flip-in">
+          <div class="flip-f"><small>Domiciliation</small><b>Votre siège social<br>à Bihorel ?</b><small>Survolez ou touchez la carte →</small></div>
+          <div class="flip-b"><div class="stamp">MBE<br>3481</div><b>VOTRE SOCIÉTÉ</b>3 rue de l'Argilière<br>76420 Bihorel<br><small style="color:#7a7068">Exemple d'adresse de domiciliation</small></div>
+        </div>
+      </div>
+      <div class="stage-cap"><h3>Domiciliation</h3><p>Une adresse pro pour votre entreprise ou association, et votre courrier géré pour vous.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AVIS ============ -->
+<section class="block reviews" id="avis">
+  <div class="eyebrow reveal">Avis Google</div>
+  <h2 class="h2 reveal">Ils en parlent <span class="out">mieux</span> que nous.</h2>
+  <div class="rv-row"><div class="rv-track" id="rvTrack"></div></div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="block" id="faq">
+  <div class="eyebrow reveal">Questions fréquentes</div>
+  <h2 class="h2 reveal">Vous vous <span class="out">demandez</span> sûrement…</h2>
+  <div class="faq reveal">
+    <details open><summary>Dois-je emballer mon colis avant de venir ?</summary><p>Non. Venez avec votre objet tel quel : l'équipe choisit le carton et le calage adaptés, et emballe sur place.</p></details>
+    <details><summary>Pourquoi mon colis est-il facturé plus lourd que son poids ?</summary><p>Les transporteurs facturent le plus élevé entre le poids réel et le poids volumétrique (calculé à partir des dimensions). Un emballage bien ajusté évite de payer de l'air — testez avec le simulateur ci-dessus.</p></details>
+    <details><summary>Puis-je envoyer du vin ou des objets d'art ?</summary><p>Oui, ce sont des envois que nous traitons avec des emballages spécifiques. Les conditions varient selon la destination : demandez un devis pour votre cas.</p></details>
+    <details><summary>Mon envoi est-il assuré ?</summary><p>Une protection complémentaire peut être proposée pour les envois de valeur. On vous explique les options au moment du dépôt.</p></details>
+    <details><summary>Et pour l'international, les douanes ?</summary><p>Pour les envois hors Union européenne, on vous accompagne sur les documents nécessaires afin que votre colis ne reste pas bloqué.</p></details>
+    <details><summary>Qui peut domicilier son siège chez vous ?</summary><p>Les entreprises comme les associations. Contactez-nous avec votre statut et votre numéro SIRET pour connaître les modalités.</p></details>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section class="block" id="contact" style="background:rgba(29,27,25,.78)">
+  <div class="eyebrow reveal">Passez nous voir</div>
+  <h2 class="h2 reveal">On est <span class="out">juste</span> à côté.</h2>
+  <div class="info">
+    <div class="panel reveal" style="background:var(--ink)">
+      <div class="status" id="status"><i></i><span>…</span></div>
+      <div class="hours" id="hours"></div>
+    </div>
+    <div class="panel reveal" style="background:var(--ink)">
+      <div class="eyebrow" style="margin:0">Centre MBE 3481</div>
+      <div class="contact-big">3 rue de l'Argilière<br>76420 Bihorel</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn" href="tel:0278083617">02 78 08 36 17</a>
+        <a class="btn ghost" href="mailto:mbe3481@mbefrance.fr">Nous écrire</a>
+        <a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=3%20Rue%20de%20l'Argili%C3%A8re%20Bihorel" target="_blank" rel="noopener">Itinéraire</a>
+        <a class="btn ghost" href="https://www.instagram.com/mbe_bihorel/" target="_blank" rel="noopener">Instagram</a>
+      </div>
+      <div class="person"><div class="avatar">RP</div><div><b>Rémy Pichavant</b><small>Solution Manager — votre interlocuteur</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL : pluie de cartons ============ -->
+<section class="final" id="final">
+  <canvas id="rain"></canvas>
+  <div class="final-inner">
+    <h2 class="h2 reveal">Un colis ?<br><span class="out">On s'en charge.</span></h2>
+    <a class="btn reveal" href="#contact">Demander un devis gratuit →</a>
+  </div>
+</section>
+
+<footer>
+  <span>Centre MBE Bihorel — franchisé indépendant du réseau Mail Boxes Etc.</span>
+  <span>Concept de refonte · Kréalabs</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+const D = Math.PI/180;
+const $ = (s,c=document)=>c.querySelector(s), $$ = (s,c=document)=>[...c.querySelectorAll(s)];
+const clamp = (v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const lerp = (a,b,t)=>a+(b-a)*t;
+const sstep = (a,b,v)=>{ const t=clamp((v-a)/(b-a)); return t*t*(3-2*t); };
+const has3D = typeof THREE !== 'undefined';
+const fine = matchMedia('(pointer:fine)').matches;
+const vis = {};
+const watch = (el,key,margin='120px') => { vis[key]=false; new IntersectionObserver(([e])=>{ vis[key]=e.isIntersecting; },{rootMargin:margin}).observe(el); };
+const updaters = [];
+let mx=0,my=0,smx=0,smy=0, cx=innerWidth/2, cy=innerHeight/2;
+addEventListener('pointermove', e => { mx=e.clientX/innerWidth*2-1; my=e.clientY/innerHeight*2-1; cx=e.clientX; cy=e.clientY; });
+
+/* ---------------- loader ---------------- */
+(() => {
+  const n=$('#ldn'), start=performance.now(); let loaded=false, done=false;
+  addEventListener('load',()=>loaded=true); setTimeout(()=>loaded=true,3500);
+  (function tick(){
+    const k=clamp((performance.now()-start)/1300); const v=Math.round((loaded?k:Math.min(k,.9))*100);
+    n.textContent=v;
+    if(v>=100 && !done){ done=true; setTimeout(()=>$('#loader').classList.add('done'),200); return; }
+    requestAnimationFrame(tick);
+  })();
+})();
+
+/* ---------------- textures carton partagées ---------------- */
+function kraftCanvas(w,h,base='#c89b62'){
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+  g.fillStyle=base; g.fillRect(0,0,w,h);
+  for(let i=0;i<w*h/30;i++){ g.fillStyle=`rgba(${Math.random()<.5?60:255},${Math.random()<.5?40:230},20,${Math.random()*.06})`; g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,1+Math.random()*2); }
+  g.globalAlpha=.05; g.strokeStyle='#5a3d1c';
+  for(let i=0;i<60;i++){ g.beginPath(); const y=Math.random()*h; g.moveTo(0,y); g.lineTo(w,y+(Math.random()-.5)*20); g.stroke(); }
+  g.globalAlpha=1; return {c,g};
+}
+const tex = c => { const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=8; return t; };
+function frontTex(){
+  const {c,g}=kraftCanvas(1024,700);
+  g.save(); g.translate(560,330); g.rotate(-.03);
+  g.fillStyle='#fbf8f2'; g.shadowColor='rgba(0,0,0,.25)'; g.shadowBlur=12; g.fillRect(-300,-190,600,380); g.shadowBlur=0;
+  g.fillStyle='#e30613'; g.fillRect(-300,-190,600,62);
+  g.fillStyle='#fff'; g.font='800 34px Unbounded, sans-serif'; g.fillText('MBE · 3481',-275,-147);
+  g.fillStyle='#121212'; g.font='600 22px Inter, sans-serif'; g.fillText('EXP. Centre MBE Bihorel (76)',-275,-90);
+  g.font='800 46px Unbounded, sans-serif'; g.fillText('→ PARTOUT',-275,-30);
+  for(let x=-275;x<120;){ const bw=2+Math.random()*7; g.fillRect(x,10,bw,110); x+=bw+2+Math.random()*5; }
+  g.font='500 18px Inter, sans-serif'; g.fillText('3 RUE DE L’ARGILIÈRE',140,40); g.fillText('76420 BIHOREL',140,66); g.fillText('FR',140,92);
+  g.restore();
+  g.strokeStyle='#121212'; g.lineWidth=7; g.globalAlpha=.75;
+  [[110,170],[170,170]].forEach(([x,y])=>{g.beginPath();g.moveTo(x,y+70);g.lineTo(x,y);g.moveTo(x-18,y+20);g.lineTo(x,y);g.lineTo(x+18,y+20);g.stroke();});
+  g.globalAlpha=1; return tex(c);
+}
+function sideTex(){
+  const {c,g}=kraftCanvas(800,700);
+  g.save(); g.translate(400,350); g.rotate(-.18);
+  g.strokeStyle='rgba(227,6,19,.85)'; g.lineWidth=8; g.strokeRect(-260,-70,520,140);
+  g.fillStyle='rgba(227,6,19,.85)'; g.font='800 54px Unbounded, sans-serif'; g.textAlign='center';
+  g.fillText('FRAGILE',0,0); g.font='600 26px Inter, sans-serif'; g.fillText('MANIPULER AVEC SOIN',0,44);
+  g.restore(); return tex(c);
+}
+const plainTex = () => tex(kraftCanvas(512,512).c);
+function artTex(){
+  const c=document.createElement('canvas'); c.width=512; c.height=380; const g=c.getContext('2d');
+  const gr=g.createLinearGradient(0,0,0,380); gr.addColorStop(0,'#f2d9b8'); gr.addColorStop(1,'#e8a77a'); g.fillStyle=gr; g.fillRect(0,0,512,380);
+  g.fillStyle='#e30613'; g.beginPath(); g.arc(350,130,70,0,7); g.fill();
+  g.fillStyle='#3a2a1c'; g.beginPath(); g.moveTo(0,380); g.lineTo(150,190); g.lineTo(260,300); g.lineTo(360,220); g.lineTo(512,380); g.fill();
+  g.fillStyle='#121212'; g.fillRect(0,330,512,50); return tex(c);
+}
+function envTex(){
+  const c=document.createElement('canvas'); c.width=512; c.height=330; const g=c.getContext('2d');
+  g.fillStyle='#f6efe4'; g.fillRect(0,0,512,330);
+  g.strokeStyle='rgba(0,0,0,.18)'; g.lineWidth=3; g.beginPath(); g.moveTo(0,0); g.lineTo(256,180); g.lineTo(512,0); g.stroke();
+  g.fillStyle='#e30613'; g.fillRect(410,30,70,80); g.strokeStyle='#f6efe4'; g.setLineDash([6,5]); g.strokeRect(416,36,58,68); g.setLineDash([]);
+  g.fillStyle='#121212'; g.font='600 22px Inter, sans-serif'; g.fillText('BIHOREL → MONDE',60,270); return tex(c);
+}
+
+/* =========================================================
+   HERO : carton qui s'ouvre + objets qui en sortent
+   ========================================================= */
+const sceneEl=$('#scene'); let hTarget=0, hP=0;
+function onScroll(){
+  const r=sceneEl.getBoundingClientRect(); hTarget=clamp(-r.top/(r.height-innerHeight));
+  $('#nav').classList.toggle('solid', scrollY>innerHeight*.6);
+  const h=document.documentElement; $('#bar').style.width=(scrollY/(h.scrollHeight-innerHeight)*100)+'%';
+}
+addEventListener('scroll',onScroll,{passive:true}); onScroll();
+watch(sceneEl,'hero','0px');
+
+const steps=$$('.step'), chips=$$('.chip'), bars=$$('.progress i'), hint=$('#hint'); let activeStep=0;
+updaters.push(()=>{
+  hP += (hTarget-hP)*.08;
+  const si = hP<.3?0:hP<.62?1:2;
+  if(si!==activeStep){ steps.forEach((s,i)=>s.classList.toggle('on',i===si)); activeStep=si; }
+  bars.forEach((b,i)=>b.style.height=clamp((hP-i/3)*3)*100+'%');
+  chips.forEach((c,i)=>c.classList.toggle('on', hP>.64+i*.045));
+  hint.style.opacity = hP>.03?0:1;
+});
+
+function fit(r,cam,cv){
+  const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return;
+  const pr=r.getPixelRatio();
+  if(cv.width!==Math.floor(w*pr) || cv.height!==Math.floor(h*pr)){ r.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
+}
+
+function initHero(){
+  const canvas=$('#gl');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  const scene=new THREE.Scene(); const camera=new THREE.PerspectiveCamera(35,1,.1,100); camera.position.set(0,1.2,9);
+
+  const W=2.4,H=1.6,Dp=1.7; const box=new THREE.Group(); scene.add(box);
+  const mPlain=new THREE.MeshStandardMaterial({map:plainTex(),roughness:.9});
+  const mFront=new THREE.MeshStandardMaterial({map:frontTex(),roughness:.85});
+  const mSide=new THREE.MeshStandardMaterial({map:sideTex(),roughness:.9});
+  const mHidden=new THREE.MeshBasicMaterial({visible:false});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(W,H,Dp),[mSide,mPlain,mHidden,mPlain,mFront,mPlain]); body.castShadow=true; box.add(body);
+  const innerMat=new THREE.MeshStandardMaterial({color:0x6b4a26,roughness:1,side:THREE.BackSide});
+  box.add(new THREE.Mesh(new THREE.BoxGeometry(W-.04,H-.02,Dp-.04),[innerMat,innerMat,mHidden,innerMat,innerMat,innerMat]));
+  document.fonts && document.fonts.ready.then(()=>{ mFront.map=frontTex(); mSide.map=sideTex(); mFront.needsUpdate=mSide.needsUpdate=true; });
+
+  const flapMat=new THREE.MeshStandardMaterial({map:plainTex(),roughness:.9});
+  const flap=s=>{ const p=new THREE.Group(); p.position.set(0,H/2,s*Dp/2); const m=new THREE.Mesh(new THREE.BoxGeometry(W,.025,Dp/2),flapMat); m.position.z=-s*Dp/4; m.castShadow=true; p.add(m); box.add(p); return p; };
+  const flapF=flap(1), flapB=flap(-1);
+  const sFlap=s=>{ const p=new THREE.Group(); p.position.set(s*W/2,H/2-.005,0); const m=new THREE.Mesh(new THREE.BoxGeometry(W*.32,.02,Dp-.04),new THREE.MeshStandardMaterial({color:0xb7884f,roughness:1})); m.position.x=-s*W*.16; p.add(m); box.add(p); return p; };
+  const flapL=sFlap(-1), flapR=sFlap(1);
+  const tape=new THREE.Mesh(new THREE.BoxGeometry(.55,.03,Dp+.02),new THREE.MeshStandardMaterial({color:0xd8b47a,roughness:.35,metalness:.05,transparent:true,opacity:.92}));
+  tape.position.y=H/2+.02; box.add(tape);
+
+  const coreLight=new THREE.PointLight(0xff3b2f,0,6); coreLight.position.y=.2; box.add(coreLight);
+  const N=420, pos=new Float32Array(N*3), seeds=[];
+  for(let i=0;i<N;i++) seeds.push({a:Math.random()*Math.PI*2,r:Math.random()*.8,s:.4+Math.random(),o:Math.random()});
+  const pGeo=new THREE.BufferGeometry(); pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const pMat=new THREE.PointsMaterial({color:0xffc9a0,size:.045,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending});
+  box.add(new THREE.Points(pGeo,pMat));
+
+  // --- objets qui sortent du carton
+  const goodies=[];
+  { // bouteille
+    const g=new THREE.Group(); const glass=new THREE.MeshStandardMaterial({color:0x1f3d2b,roughness:.12,metalness:.35});
+    const b=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.5,28),glass);
+    const sh=new THREE.Mesh(new THREE.CylinderGeometry(.045,.11,.13,28),glass); sh.position.y=.315;
+    const nk=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.2,16),glass); nk.position.y=.48;
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.07,16),new THREE.MeshStandardMaterial({color:0xe30613,roughness:.4})); cap.position.y=.57;
+    const lb=new THREE.Mesh(new THREE.CylinderGeometry(.113,.113,.2,28,1,true),new THREE.MeshStandardMaterial({color:0xf6efe4,roughness:.8})); lb.position.y=-.03;
+    g.add(b,sh,nk,cap,lb); goodies.push(g);
+  }
+  { // tableau
+    const g=new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(.66,.5,.05),new THREE.MeshStandardMaterial({color:0x2b1d12,roughness:.6})));
+    const art=new THREE.Mesh(new THREE.PlaneGeometry(.56,.4),new THREE.MeshStandardMaterial({map:artTex(),roughness:.7})); art.position.z=.027; g.add(art);
+    const back=art.clone(); back.rotation.y=Math.PI; back.position.z=-.027; g.add(back); goodies.push(g);
+  }
+  { // enveloppe
+    const g=new THREE.Group(); const cream=new THREE.MeshStandardMaterial({color:0xf6efe4,roughness:.8});
+    const e=new THREE.Mesh(new THREE.BoxGeometry(.6,.39,.014),[cream,cream,cream,cream,new THREE.MeshStandardMaterial({map:envTex(),roughness:.8}),cream]); g.add(e); goodies.push(g);
+  }
+  { // mini globe
+    const g=new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(.2,24,16),new THREE.MeshStandardMaterial({color:0x1d1b19,roughness:.5})));
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(.205,14,10),new THREE.MeshBasicMaterial({color:0xe30613,wireframe:true,transparent:true,opacity:.8})));
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.3,.008,8,60),new THREE.MeshBasicMaterial({color:0xe7cfa7})); ring.rotation.x=1.2; g.add(ring);
+    goodies.push(g);
+  }
+  goodies.forEach(g=>{ g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); g.scale.setScalar(.001); scene.add(g); });
+
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.ShadowMaterial({opacity:.35}));
+  ground.rotation.x=-Math.PI/2; ground.position.y=-1.6; ground.receiveShadow=true; scene.add(ground);
+
+  const floaters=[]; const fMat=new THREE.MeshStandardMaterial({map:plainTex(),roughness:.95});
+  for(let i=0;i<16;i++){
+    const s=.18+Math.random()*.35; const m=new THREE.Mesh(new THREE.BoxGeometry(s*1.4,s,s),fMat);
+    m.position.set(-1+Math.random()*10,(Math.random()-.3)*7,-4-Math.random()*8); m.rotation.set(Math.random()*6,Math.random()*6,0);
+    m.userData={vy:.002+Math.random()*.004,vr:(Math.random()-.5)*.01}; scene.add(m); floaters.push(m);
+  }
+  scene.add(new THREE.HemisphereLight(0xfff1e0,0x1a1210,.65));
+  const key=new THREE.DirectionalLight(0xfff0dc,1.15); key.position.set(4,7,5); key.castShadow=true; key.shadow.mapSize.set(1024,1024);
+  Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6}); scene.add(key);
+  const rim=new THREE.DirectionalLight(0xe30613,1.4); rim.position.set(-6,2,-4); scene.add(rim);
+
+  updaters.push((t)=>{
+    if(!vis.hero) return;
+    fit(renderer,camera,canvas);
+    const p=hP, open=sstep(.3,.58,p), rise=sstep(.45,.8,p), out=sstep(.66,.97,p), mob=innerWidth<860;
+    box.position.x = lerp(mob?0:1.7, mob?0:1.25, out);
+    box.position.y = (mob?.9:0) + Math.sin(t*1.2)*.08 - open*.15 - rise*(mob?.2:.35);
+    box.rotation.y = -.6 + p*Math.PI*1.15 + smx*.35;
+    box.rotation.x = .28 + smy*.15 + open*.18;
+    box.rotation.z = Math.sin(t*.8)*.03;
+    const sc=(mob?.62:1)*(1-out*.18); box.scale.setScalar(sc);
+
+    tape.scale.x=Math.max(.001,1-open*1.2); tape.material.opacity=.92*(1-open);
+    flapL.rotation.z=-open*2.1; flapR.rotation.z=open*2.1;
+    flapF.rotation.x=sstep(.15,1,open)*2.25; flapB.rotation.x=-sstep(.15,1,open)*2.25;
+    coreLight.intensity=open*4+Math.sin(t*6)*.3*open; pMat.opacity=open*.9*(1-rise*.5);
+    const a=pGeo.attributes.position.array;
+    for(let i=0;i<N;i++){ const s=seeds[i], life=(t*.35*s.s+s.o)%1, rr=s.r*(1+life*1.4);
+      a[i*3]=Math.cos(s.a+t*.3)*rr*W*.4; a[i*3+1]=H/2-.3+life*2.6*open; a[i*3+2]=Math.sin(s.a+t*.3)*rr*Dp*.4; }
+    pGeo.attributes.position.needsUpdate=true;
+
+    goodies.forEach((g,i)=>{
+      const ang=i/goodies.length*Math.PI*2 + t*.35, rad=(mob?1.05:1.55)*rise;
+      g.position.set(box.position.x+Math.cos(ang)*rad, box.position.y+(H/2)*sc + rise*((mob?.9:1.15)+.18*Math.sin(t*1.3+i*1.7)) - (1-rise)*.4, box.position.z+Math.sin(ang)*rad*.7);
+      g.rotation.set(Math.sin(t*.7+i)*.25, t*.8+i*1.3, Math.cos(t*.6+i)*.15);
+      g.scale.setScalar(Math.max(.001,rise)*(mob?.8:1.15));
+    });
+
+    camera.position.z=9-open*1.2+out*.9; camera.lookAt(0,.35,0);
+    floaters.forEach(f=>{ f.position.y+=f.userData.vy; f.rotation.x+=f.userData.vr; f.rotation.y+=f.userData.vr; if(f.position.y>5) f.position.y=-4; });
+    renderer.render(scene,camera);
+  });
+}
+
+/* =========================================================
+   GLOBE : routes animées depuis Bihorel
+   ========================================================= */
+const ZONES={
+  all:{auto:true,lat:24,zoom:3.7,txt:'<b>22 destinations</b> montrées ici à titre d\'exemple. En pratique : à peu près partout où un transporteur livre.'},
+  fr:{lat:46.4,lon:2.2,zoom:1.32,txt:'<b>France métropolitaine.</b> Un cadeau, un retour client, un dossier urgent : en standard ou en express, selon votre délai.'},
+  eu:{lat:47,lon:6,zoom:1.9,txt:'<b>Union européenne.</b> Pas de douane, des délais courts : idéal pour vos clients et vos proches en Europe.'},
+  world:{auto:true,lat:18,zoom:3.5,txt:'<b>International.</b> Amérique, Asie, Afrique, Océanie : on vous aide aussi pour les documents douaniers.'}
+};
+const CITIES=[
+ ['Nantes',47.22,-1.55,'fr'],['Lyon',45.76,4.83,'fr'],['Marseille',43.30,5.37,'fr'],['Bordeaux',44.84,-0.58,'fr'],['Strasbourg',48.57,7.75,'fr'],['Brest',48.39,-4.49,'fr'],['Toulouse',43.60,1.44,'fr'],
+ ['Londres',51.51,-0.13,'eu'],['Bruxelles',50.85,4.35,'eu'],['Berlin',52.52,13.40,'eu'],['Madrid',40.42,-3.70,'eu'],['Milan',45.46,9.19,'eu'],['Varsovie',52.23,21.01,'eu'],['Lisbonne',38.72,-9.14,'eu'],
+ ['New York',40.71,-74.0,'world'],['Montréal',45.50,-73.57,'world'],['São Paulo',-23.55,-46.63,'world'],['Dakar',14.72,-17.47,'world'],['Dubaï',25.20,55.27,'world'],['Tokyo',35.68,139.69,'world'],['Singapour',1.35,103.82,'world'],['Sydney',-33.87,151.21,'world']
+];
+let zone='all';
+function setZone(z){ zone=z; $$('.zone').forEach(b=>b.classList.toggle('on',b.dataset.z===z)); $('#zoneInfo').innerHTML=ZONES[z].txt; if(globeFocus) globeFocus(); }
+let globeFocus=null;
+const gsec=$('#monde'), ZK=['all','fr','eu','world']; let gSpin=0, gLast=0;
+$$('.zone').forEach(b=>b.addEventListener('click',()=>{ const i=ZK.indexOf(b.dataset.z), rg=gsec.offsetHeight-innerHeight; scrollTo({top:gsec.offsetTop+(i+.5)/4*rg,behavior:'smooth'}); }));
+updaters.push(()=>{
+  const r=gsec.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight){ gSpin=0; return; }
+  const gp=clamp(-r.top/(r.height-innerHeight)), z=ZK[Math.min(3,Math.floor(gp*4))];
+  if(z!==zone) setZone(z);
+  gSpin+=(gp-gLast)*7; gLast=gp;
+});
+$('#zoneInfo').innerHTML=ZONES.all.txt;
+
+function initGlobe(){
+  const wrap=$('#globeWrap'), cv=$('#globe');
+  const r=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true}); r.setPixelRatio(Math.min(devicePixelRatio,2));
+  const sc=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(40,1,.05,100); cam.position.z=3.7;
+  const G=new THREE.Group(); sc.add(G); const R=1;
+  G.add(new THREE.Mesh(new THREE.SphereGeometry(R*.995,64,64),new THREE.MeshBasicMaterial({color:0x17130f})));
+  const n=9000, arr=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ const y=1-(i/(n-1))*2, rad=Math.sqrt(1-y*y), th=i*2.399963; arr[i*3]=Math.cos(th)*rad*R; arr[i*3+1]=y*R; arr[i*3+2]=Math.sin(th)*rad*R; }
+  const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.BufferAttribute(arr,3));
+  G.add(new THREE.Points(dg,new THREE.PointsMaterial({color:0xe7cfa7,size:.011,transparent:true,opacity:.5})));
+  // méridiens / parallèles
+  const gridMat=new THREE.LineBasicMaterial({color:0xe7cfa7,transparent:true,opacity:.08});
+  for(let la=-60;la<=60;la+=30){ const pts=[]; for(let lo=0;lo<=360;lo+=5) pts.push(ll(la,lo,R*1.001)); G.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),gridMat)); }
+  for(let lo=0;lo<360;lo+=30){ const pts=[]; for(let la=-90;la<=90;la+=5) pts.push(ll(la,lo,R*1.001)); G.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),gridMat)); }
+  // atmosphère
+  sc.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.2,64,64),new THREE.ShaderMaterial({
+    vertexShader:'varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader:'varying vec3 vN; void main(){ float i=pow(0.66-dot(vN,vec3(0.,0.,1.)),3.0); gl_FragColor=vec4(0.89,0.12,0.12,1.0)*i; }',
+    side:THREE.BackSide,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false})));
+  // orbite avec petits colis
+  const orbit=new THREE.Group(); orbit.rotation.set(1.15,0,.35); sc.add(orbit);
+  const orbMat=new THREE.MeshBasicMaterial({color:0xe7cfa7,transparent:true,opacity:.18});
+  orbit.add(new THREE.Mesh(new THREE.TorusGeometry(R*1.42,.003,6,160),orbMat));
+  const sats=new THREE.Group(); orbit.add(sats); const satMat=new THREE.MeshBasicMaterial({color:0xc89b62,transparent:true});
+  for(let i=0;i<3;i++){ const m=new THREE.Mesh(new THREE.BoxGeometry(.07,.05,.05),satMat); const a=i/3*Math.PI*2; m.position.set(Math.cos(a)*R*1.42,0,Math.sin(a)*R*1.42); sats.add(m); }
+
+  function ll(lat,lon,rr=R){ const p=(90-lat)*D, t=(lon+180)*D; return new THREE.Vector3(-rr*Math.sin(p)*Math.cos(t), rr*Math.cos(p), rr*Math.sin(p)*Math.sin(t)); }
+  const origin=ll(49.44,1.10);
+  const oDot=new THREE.Mesh(new THREE.SphereGeometry(.018,16,16),new THREE.MeshBasicMaterial({color:0xe30613})); oDot.position.copy(origin); G.add(oDot);
+  const ringGeo=new THREE.RingGeometry(.02,.026,40);
+  const mkRing=(p,color)=>{ const m=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color,transparent:true,side:THREE.DoubleSide,depthWrite:false})); m.position.copy(p.clone().multiplyScalar(1.002)); m.lookAt(p.clone().multiplyScalar(2)); G.add(m); return m; };
+  const oRing=mkRing(origin,0xe30613);
+  const mkLabel=(txt,cls='')=>{ const el=document.createElement('div'); el.className='glabel '+cls; el.textContent=txt; wrap.appendChild(el); return el; };
+  const oLabel=mkLabel('Bihorel','origin');
+
+  const segs=96, rs=6, packetMat=new THREE.MeshBasicMaterial({color:0xf6efe4});
+  const arcs=CITIES.map(([name,lat,lon,region],i)=>{
+    const a=origin.clone().normalize(), bp=ll(lat,lon), b=bp.clone().normalize();
+    const q=new THREE.Quaternion().setFromUnitVectors(a,b), ang=a.angleTo(b), h=.02+ang*.11, pts=[];
+    for(let k=0;k<=48;k++){ const t=k/48; const qt=new THREE.Quaternion().slerp(q,t); pts.push(a.clone().applyQuaternion(qt).multiplyScalar(R*(1.003+h*Math.sin(Math.PI*t)))); }
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const geo=new THREE.TubeGeometry(curve,segs,region==='fr'?.0025:.0042,rs,false);
+    const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xff2b2b,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+    G.add(mesh);
+    const pk=new THREE.Mesh(new THREE.BoxGeometry(.022,.016,.016),packetMat); G.add(pk);
+    const dot=new THREE.Mesh(new THREE.SphereGeometry(.009,10,10),new THREE.MeshBasicMaterial({color:0xf6efe4,transparent:true})); dot.position.copy(bp); G.add(dot);
+    const ring=mkRing(bp,0xf6efe4);
+    return {name,region,geo,mesh,pk,dot,ring,curve,pos:bp,el:mkLabel(name),phase:i*.37,dur:1.2+ang*.9};
+  });
+
+  let ry=-(1.10+90)*D, rx=24*D, zoom=3.7, tRy=ry, tRx=rx, tZoom=zoom, dragging=false, lastX=0,lastY=0, idleT=0;
+  globeFocus=()=>{
+    const z=ZONES[zone]; tZoom=z.zoom; tRx=z.lat*D;
+    if(!z.auto){ let target=-(z.lon+90)*D; while(target-tRy>Math.PI) target-=Math.PI*2; while(target-tRy<-Math.PI) target+=Math.PI*2; tRy=target; }
+  };
+  wrap.addEventListener('pointerdown',e=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; wrap.setPointerCapture(e.pointerId); });
+  wrap.addEventListener('pointermove',e=>{ if(!dragging) return; tRy+=(e.clientX-lastX)*.006; tRx=clamp(tRx+(e.clientY-lastY)*.004,-.9,1.2); lastX=e.clientX; lastY=e.clientY; idleT=0; });
+  const up=()=>{ dragging=false; }; wrap.addEventListener('pointerup',up); wrap.addEventListener('pointercancel',up);
+  watch(wrap,'globe');
+
+  const tmp=new THREE.Vector3();
+  const place=(el,p,show)=>{
+    tmp.copy(p).applyMatrix4(G.matrixWorld); const facing=tmp.clone().normalize().z>.22; tmp.project(cam);
+    const w=cv.clientWidth,h=cv.clientHeight;
+    el.style.transform=`translate(${(tmp.x*.5+.5)*w}px,${(-tmp.y*.5+.5)*h}px) translate(-50%,-160%)`;
+    el.style.opacity=(show&&facing)?1:0;
+  };
+  updaters.push((t,dt)=>{
+    if(!vis.globe) return;
+    fit(r,cam,cv);
+    idleT+=dt; if(ZONES[zone].auto && !dragging && idleT>1.2) tRy+=dt*.12;
+    if(ZONES[zone].auto) tRy+=gSpin; gSpin=0;
+    ry+=(tRy-ry)*.06; rx+=(tRx-rx)*.06; zoom+=(tZoom-zoom)*.05;
+    G.rotation.set(rx,ry,0); cam.position.z=zoom; G.updateMatrixWorld();
+    orbMat.opacity=.18*clamp((zoom-2.6)/.6); satMat.opacity=clamp((zoom-2.6)/.6); sats.visible=zoom>2.6; sats.rotation.y+=dt*.35;
+    const zf=clamp((zoom-1)/2.7,.12,1); oDot.scale.setScalar(Math.max(.35,zf));
+    oRing.scale.setScalar((1+((t*.8)%1)*2.5)*zf); oRing.material.opacity=1-((t*.8)%1);
+    arcs.forEach(a=>{
+      const active = zone==='all' || zone===a.region;
+      a.dot.scale.setScalar(Math.max(.35,zf)); a.pk.scale.setScalar(Math.max(.3,zf));
+      if(!active){ a.geo.setDrawRange(0,0); a.pk.visible=false; a.ring.visible=false; a.dot.material.opacity=.25; place(a.el,a.pos,false); return; }
+      const L=a.dur+1.3+.7, u=(t*.9+a.phase)%L; let head,tail=0;
+      if(u<a.dur) head=1-Math.pow(1-u/a.dur,2); else { head=1; if(u>a.dur+1.3) tail=(u-a.dur-1.3)/.7; }
+      const per=rs*6, s0=Math.floor(tail*segs)*per, s1=Math.floor(head*segs)*per;
+      a.geo.setDrawRange(s0,Math.max(0,s1-s0));
+      a.pk.visible=head<1; if(head<1){ a.pk.position.copy(a.curve.getPointAt(head)); a.pk.lookAt(a.curve.getPointAt(Math.min(1,head+.02))); }
+      const arrived=u>=a.dur; a.ring.visible=arrived; if(arrived){ const k=clamp((u-a.dur)/1.3); a.ring.scale.setScalar((1+k*2.5)*zf); a.ring.material.opacity=1-k; }
+      a.dot.material.opacity=1;
+      place(a.el,a.pos, zone!=='all' || a.region==='world');
+    });
+    place(oLabel,origin,true);
+    r.render(sc,cam);
+  });
+}
+
+/* =========================================================
+   FINAL : pluie de cartons qui s'empilent
+   ========================================================= */
+function initRain(){
+  const cv=$('#rain'); const r=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,1.75)); r.outputEncoding=THREE.sRGBEncoding; r.shadowMap.enabled=true; r.shadowMap.type=THREE.PCFSoftShadowMap;
+  const sc=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(38,1,.1,100);
+  sc.add(new THREE.HemisphereLight(0xfff1e0,0x1a1210,.7));
+  const k=new THREE.DirectionalLight(0xfff0dc,1.1); k.position.set(5,12,7); k.castShadow=true; k.shadow.mapSize.set(1024,1024);
+  Object.assign(k.shadow.camera,{left:-10,right:10,top:10,bottom:-10}); sc.add(k);
+  const rim=new THREE.DirectionalLight(0xe30613,1.3); rim.position.set(-7,3,-5); sc.add(rim);
+  const g=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.ShadowMaterial({opacity:.45})); g.rotation.x=-Math.PI/2; g.receiveShadow=true; sc.add(g);
+  const plain=new THREE.MeshStandardMaterial({map:plainTex(),roughness:.9});
+  const front=new THREE.MeshStandardMaterial({map:frontTex(),roughness:.85});
+  const frag=new THREE.MeshStandardMaterial({map:sideTex(),roughness:.9});
+  const labeled=[plain,plain,plain,plain,front,plain], fragile=[frag,plain,plain,plain,plain,plain];
+  const cols=17, rows=3, cell=1.15, hm=new Array(cols*rows).fill(0), boxes=[];
+  for(let i=0;i<48;i++){
+    const w=.7+Math.random()*.4, h=.45+Math.random()*.45, d=.7+Math.random()*.35;
+    const c=clamp(Math.round((Math.random()+Math.random())/2*(cols-1)),0,cols-1), rr=Math.floor(Math.random()*rows), idx=rr*cols+c;
+    const ty=hm[idx]+h/2; hm[idx]+=h;
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), i%5===0?labeled:(i%7===0?fragile:plain)); m.castShadow=m.receiveShadow=true;
+    m.userData={tx:(c-(cols-1)/2)*cell+(Math.random()-.5)*.12, ty, tz:(rr-1)*cell+(Math.random()-.5)*.12, ry:(Math.random()-.5)*.35, delay:i*.075+Math.random()*.12, rs:[Math.random()*6,Math.random()*6,Math.random()*6]};
+    m.visible=false; sc.add(m); boxes.push(m);
+  }
+  let t0=null, wasVis=false;
+  const reset=t=>{ t0=t; boxes.forEach(m=>{ m.userData.y=13+Math.random()*3; m.userData.vy=0; m.userData.done=false; m.visible=false; }); };
+  watch($('#final'),'rain','0px');
+  updaters.push((t,dt)=>{
+    if(!vis.rain){ wasVis=false; return; }
+    if(!wasVis){ wasVis=true; reset(t); }
+    fit(r,cam,cv); dt=Math.min(dt,.033);
+    boxes.forEach(m=>{
+      const u=m.userData; if(t-t0<u.delay) return; m.visible=true;
+      if(!u.done){ u.vy-=28*dt; u.y+=u.vy*dt; if(u.y<=u.ty){ u.y=u.ty; if(Math.abs(u.vy)>3.5) u.vy=-u.vy*.22; else { u.vy=0; u.done=true; } } }
+      const kk=sstep(0,1,1-(u.y-u.ty)/6);
+      m.position.set(u.tx,u.y,u.tz);
+      m.rotation.set(lerp(u.rs[0],0,kk), lerp(u.rs[1],u.ry,kk), lerp(u.rs[2],0,kk));
+    });
+    const mob=innerWidth<760;
+    cam.position.set(smx*1.6, 5.2-smy*.6, mob?24:15); cam.lookAt(0, mob?4.6:3.9, 0);
+    r.render(sc,cam);
+  });
+}
+
+
+/* =========================================================
+   LE VOYAGE DU COLIS : UI (indépendante de la 3D)
+   ========================================================= */
+const vsec=$('#voyage'); let vq=0, vIdx=-1;
+const vsteps=$$('.vstep'), vlabels=$$('.v-labels span'), vbar=$('#vbar'), VB=[0,.2,.45,.64,.78];
+watch(vsec,'voy','0px');
+updaters.push(()=>{
+  const r=vsec.getBoundingClientRect(); if(r.bottom<-50||r.top>innerHeight+50) return;
+  const q=clamp(-r.top/(r.height-innerHeight)); vq+=(q-vq)*.12;
+  let idx=0; VB.forEach((b,i)=>{ if(vq>=b) idx=i; });
+  if(idx!==vIdx){ vIdx=idx; vsteps.forEach((s,i)=>s.classList.toggle('on',i===idx)); vlabels.forEach((s,i)=>s.classList.toggle('on',i<=idx)); }
+  vbar.style.width=(vq*100).toFixed(2)+'%';
+});
+
+const easeBack=x=>{ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); };
+const bounce=x=>{ const n=7.5625,d=2.75; if(x<1/d) return n*x*x; if(x<2/d) return n*(x-=1.5/d)*x+.75; if(x<2.5/d) return n*(x-=2.25/d)*x+.9375; return n*(x-=2.625/d)*x+.984375; };
+
+function labelTex(){
+  const c=document.createElement('canvas'); c.width=640; c.height=420; const g=c.getContext('2d');
+  g.fillStyle='#fbf8f2'; g.fillRect(0,0,640,420); g.fillStyle='#e30613'; g.fillRect(0,0,640,74);
+  g.fillStyle='#fff'; g.font='800 36px Unbounded, sans-serif'; g.fillText('MBE · 3481',28,50);
+  g.fillStyle='#121212'; g.font='600 22px Inter, sans-serif'; g.fillText('DE : CENTRE MBE BIHOREL (76)',28,116);
+  g.font='800 50px Unbounded, sans-serif'; g.fillText('À : PARTOUT',28,180);
+  for(let x=28;x<420;){ const bw=2+Math.random()*7; g.fillRect(x,215,bw,130); x+=bw+2+Math.random()*5; }
+  g.font='600 20px Inter, sans-serif'; g.fillText('MB 3481 2610 0042',28,385);
+  g.lineWidth=5; g.strokeStyle='#121212'; g.strokeRect(462,215,150,130); g.font='800 60px Unbounded, sans-serif'; g.fillText('FR',487,302);
+  return tex(c);
+}
+function stampTex(){
+  const c=document.createElement('canvas'); c.width=640; c.height=320; const g=c.getContext('2d');
+  g.translate(320,160); g.rotate(-.12); g.strokeStyle='rgba(227,6,19,.9)'; g.lineWidth=10; g.strokeRect(-280,-100,560,200);
+  g.fillStyle='rgba(227,6,19,.9)'; g.textAlign='center'; g.font='800 84px Unbounded, sans-serif'; g.fillText('FRAGILE',0,20);
+  g.font='600 30px Inter, sans-serif'; g.fillText('↑  HAUT  ↑',0,72); return tex(c);
+}
+function makePlane(){
+  const P=new THREE.Group();
+  const white=new THREE.MeshStandardMaterial({color:0xf2efe9,roughness:.45,metalness:.1});
+  const red=new THREE.MeshStandardMaterial({color:0xe30613,roughness:.5});
+  const grey=new THREE.MeshStandardMaterial({color:0x5d5753,roughness:.5,metalness:.3});
+  const add=(geo,mat,x,y,z,rz=0)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.rotation.z=rz; m.castShadow=true; P.add(m); return m; };
+  add(new THREE.CylinderGeometry(.34,.42,4.2,28),white,0,0,0,Math.PI/2);
+  add(new THREE.SphereGeometry(.42,28,18),white,2.1,0,0).scale.set(1.5,1,1);
+  add(new THREE.CylinderGeometry(.06,.34,1.3,24),white,-2.75,0,0,Math.PI/2);
+  add(new THREE.CylinderGeometry(.41,.41,.3,28),red,.9,0,0,Math.PI/2);
+  add(new THREE.BoxGeometry(1.4,.07,5.4),white,.2,-.15,0);
+  add(new THREE.BoxGeometry(.5,.08,.25),red,.2,-.15,2.75); add(new THREE.BoxGeometry(.5,.08,.25),red,.2,-.15,-2.75);
+  add(new THREE.BoxGeometry(.9,1.1,.07),red,-2.95,.65,0);
+  add(new THREE.BoxGeometry(.6,.06,1.9),white,-2.95,.12,0);
+  add(new THREE.CylinderGeometry(.2,.2,.7,20),grey,.45,-.42,1.35,Math.PI/2); add(new THREE.CylinderGeometry(.2,.2,.7,20),grey,.45,-.42,-1.35,Math.PI/2);
+  return P;
+}
+
+/* =========================================================
+   LE VOYAGE DU COLIS : scène 3D épinglée, 100 % pilotée par le scroll
+   ========================================================= */
+function initVoyage(){
+  const cv=$('#vcan'); const r=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2)); r.outputEncoding=THREE.sRGBEncoding; r.shadowMap.enabled=true; r.shadowMap.type=THREE.PCFSoftShadowMap;
+  const sc=new THREE.Scene(); sc.background=new THREE.Color(0x141110); sc.fog=new THREE.Fog(0x141110,16,52);
+  const cam=new THREE.PerspectiveCamera(38,1,.1,200);
+  sc.add(new THREE.HemisphereLight(0xfff1e0,0x1a1210,.65));
+  const key=new THREE.DirectionalLight(0xfff0dc,1.15); key.position.set(5,10,6); key.castShadow=true; key.shadow.mapSize.set(2048,2048);
+  Object.assign(key.shadow.camera,{left:-8,right:8,top:8,bottom:-8}); sc.add(key);
+  const rim=new THREE.DirectionalLight(0xe30613,.9); rim.position.set(-7,4,-6); sc.add(rim);
+  const flash=new THREE.PointLight(0xff2020,0,5); sc.add(flash);
+
+  const plat=new THREE.Mesh(new THREE.CylinderGeometry(3.6,3.75,.3,72),new THREE.MeshStandardMaterial({color:0x0f0c0b,roughness:.95}));
+  plat.position.y=-.15; plat.receiveShadow=true; sc.add(plat);
+  const edge=new THREE.Mesh(new THREE.TorusGeometry(3.62,.03,8,160),new THREE.MeshBasicMaterial({color:0xe30613})); edge.rotation.x=Math.PI/2; edge.position.y=.005; sc.add(edge);
+  const grid=new THREE.GridHelper(90,90,0x2c2622,0x221d1a); grid.material.transparent=true; grid.material.opacity=.35; grid.position.y=-.3; sc.add(grid);
+  const sg=new THREE.Mesh(new THREE.PlaneGeometry(90,90),new THREE.ShadowMaterial({opacity:.35})); sg.rotation.x=-Math.PI/2; sg.position.y=-.29; sg.receiveShadow=true; sc.add(sg);
+
+  // --- carton à plat qui se monte (charnières)
+  const W=2.2,H=1.4,Dp=1.6, C=new THREE.Group(); sc.add(C);
+  const kraft=new THREE.MeshStandardMaterial({map:plainTex(),roughness:.9});
+  const mesh=(geo,mat=kraft)=>{ const m=new THREE.Mesh(geo,mat); m.castShadow=true; m.receiveShadow=true; return m; };
+  const piv=(parent,x,y,z)=>{ const p=new THREE.Group(); p.position.set(x,y,z); parent.add(p); return p; };
+  const base=mesh(new THREE.BoxGeometry(W,.02,Dp)); base.position.y=.01; C.add(base);
+  const pF=piv(C,0,.01,Dp/2), pB=piv(C,0,.01,-Dp/2), pR=piv(C,W/2,.01,0), pL=piv(C,-W/2,.01,0);
+  const m1=mesh(new THREE.BoxGeometry(W,.02,H)); m1.position.z=H/2; pF.add(m1);
+  const m2=mesh(new THREE.BoxGeometry(W,.02,H)); m2.position.z=-H/2; pB.add(m2);
+  const m3=mesh(new THREE.BoxGeometry(H,.02,Dp)); m3.position.x=H/2; pR.add(m3);
+  const m4=mesh(new THREE.BoxGeometry(H,.02,Dp)); m4.position.x=-H/2; pL.add(m4);
+  const fF=piv(pF,0,0,H), fB=piv(pB,0,0,-H), fR=piv(pR,H-.03,0,0), fL=piv(pL,-(H-.03),0,0);
+  const a1=mesh(new THREE.BoxGeometry(W,.02,Dp/2)); a1.position.z=Dp/4; fF.add(a1);
+  const a2=mesh(new THREE.BoxGeometry(W,.02,Dp/2)); a2.position.z=-Dp/4; fB.add(a2);
+  const a3=mesh(new THREE.BoxGeometry(.75,.02,Dp-.06)); a3.position.x=.375; fR.add(a3);
+  const a4=mesh(new THREE.BoxGeometry(.75,.02,Dp-.06)); a4.position.x=-.375; fL.add(a4);
+
+  // --- contenu
+  const bottle=new THREE.Group(); {
+    const glass=new THREE.MeshStandardMaterial({color:0x1f3d2b,roughness:.12,metalness:.35});
+    const b=mesh(new THREE.CylinderGeometry(.14,.14,.62,28),glass); b.position.y=.31;
+    const sh=mesh(new THREE.CylinderGeometry(.055,.14,.16,28),glass); sh.position.y=.70;
+    const nk=mesh(new THREE.CylinderGeometry(.05,.05,.24,16),glass); nk.position.y=.9;
+    const cap=mesh(new THREE.CylinderGeometry(.053,.053,.08,16),new THREE.MeshStandardMaterial({color:0xe30613})); cap.position.y=1.03;
+    const lb=mesh(new THREE.CylinderGeometry(.143,.143,.24,28,1,true),new THREE.MeshStandardMaterial({color:0xf6efe4,roughness:.8,side:THREE.DoubleSide})); lb.position.y=.3;
+    bottle.add(b,sh,nk,cap,lb);
+  }
+  C.add(bottle);
+  const gift=mesh(new THREE.BoxGeometry(.6,.45,.6),new THREE.MeshStandardMaterial({color:0xe30613,roughness:.55}));
+  const ribM=new THREE.MeshStandardMaterial({color:0xf6efe4,roughness:.6});
+  gift.add(new THREE.Mesh(new THREE.BoxGeometry(.62,.46,.1),ribM), new THREE.Mesh(new THREE.BoxGeometry(.1,.46,.62),ribM)); C.add(gift);
+  const BN=150, bub=new THREE.InstancedMesh(new THREE.SphereGeometry(.09,12,10),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.15,transparent:true,opacity:.6}),BN);
+  bub.castShadow=true; C.add(bub);
+  const bt=[]; for(let i=0;i<BN;i++) bt.push({x:(Math.random()-.5)*(W-.3),y:.1+Math.random()*(H-.35),z:(Math.random()-.5)*(Dp-.3),s:.7+Math.random()*.6,d:i/BN*.09});
+  const dm=new THREE.Object3D();
+
+  // --- scotch
+  const tapeM=new THREE.MeshStandardMaterial({color:0xd8b47a,roughness:.35,metalness:.05,transparent:true,opacity:.95});
+  const tg=new THREE.BoxGeometry(.44,.012,Dp+.02); tg.translate(0,0,(Dp+.02)/2);
+  const tTop=mesh(tg,tapeM); tTop.position.set(0,H+.03,-(Dp+.02)/2); C.add(tTop);
+  const fg=new THREE.BoxGeometry(.44,.5,.012); fg.translate(0,-.25,0);
+  const tFr=mesh(fg,tapeM); tFr.position.set(0,H+.025,Dp/2+.016); C.add(tFr);
+  const tBk=mesh(fg,tapeM); tBk.position.set(0,H+.025,-(Dp/2+.016)); C.add(tBk);
+
+  // --- étiquette, tampon, laser
+  const labM=new THREE.MeshStandardMaterial({map:labelTex(),roughness:.7}); const lab=mesh(new THREE.PlaneGeometry(.8,.525),labM); C.add(lab);
+  const stM=new THREE.MeshBasicMaterial({map:stampTex(),transparent:true,depthWrite:false}); const stamp=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.55),stM);
+  stamp.position.set(W/2+.016,H*.55,0); stamp.rotation.y=Math.PI/2; C.add(stamp);
+  const laser=new THREE.Mesh(new THREE.PlaneGeometry(.95,.02),new THREE.MeshBasicMaterial({color:0xff2020,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); C.add(laser);
+  document.fonts && document.fonts.ready.then(()=>{ labM.map=labelTex(); stM.map=stampTex(); labM.needsUpdate=stM.needsUpdate=true; });
+
+  // --- avion + faisceau
+  const P=makePlane(); P.visible=false; sc.add(P);
+  const beamM=new THREE.MeshBasicMaterial({color:0xff3030,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(.45,1.5,3.9,40,1,true),beamM); sc.add(beam);
+  // traînées
+  const TR=90, trailPos=new Float32Array(TR*3*2), trailGeo=new THREE.BufferGeometry(); trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPos,3));
+  const trail=new THREE.Points(trailGeo,new THREE.PointsMaterial({color:0xf6efe4,size:.08,transparent:true,opacity:.55,depthWrite:false})); trail.frustumCulled=false; sc.add(trail);
+  const tipL=new THREE.Vector3(), tipR=new THREE.Vector3();
+
+  const tgt=new THREE.Vector3(), hover=new THREE.Vector3(0,4.5,0);
+  updaters.push((t)=>{
+    if(!vis.voy) return;
+    fit(r,cam,cv);
+    const q=vq, mob=innerWidth<860;
+    // 1. montage
+    const fa=sstep(.03,.12,q)*Math.PI/2, sa=sstep(.07,.17,q)*Math.PI/2;
+    pF.rotation.x=-fa; pB.rotation.x=fa; pR.rotation.z=sa; pL.rotation.z=-sa;
+    const flare=-.35*sstep(.05,.17,q), cS=sstep(.45,.51,q), cF=sstep(.5,.58,q);
+    fR.rotation.z=lerp(flare,Math.PI/2,cS); fL.rotation.z=-lerp(flare,Math.PI/2,cS);
+    fF.rotation.x=-lerp(flare,Math.PI/2,cF); fB.rotation.x=lerp(flare,Math.PI/2,cF);
+    // 2. calage
+    const kb=sstep(.2,.27,q); bottle.visible=kb>0; bottle.position.set(-.5,lerp(4.5,0,bounce(kb)),-.05); bottle.rotation.y=(1-kb)*2;
+    const kg=sstep(.24,.31,q); gift.visible=kg>0; gift.position.set(.5,lerp(5,.245,bounce(kg)),.15); gift.rotation.y=.4+(1-kg)*3;
+    for(let i=0;i<BN;i++){ const b=bt[i], k=sstep(.29+b.d,.35+b.d,q);
+      dm.position.set(b.x,lerp(4.5+b.d*20,b.y,bounce(k)),b.z); dm.scale.setScalar(k>0?b.s:.0001); dm.updateMatrix(); bub.setMatrixAt(i,dm.matrix); }
+    bub.instanceMatrix.needsUpdate=true;
+    // 3. fermeture + scotch
+    const kt=sstep(.57,.62,q); tTop.visible=kt>0; tTop.scale.z=Math.max(.001,kt);
+    const kv=sstep(.61,.64,q); tFr.visible=tBk.visible=kv>0; tFr.scale.y=tBk.scale.y=Math.max(.001,kv);
+    // 4. étiquette + tampon + scan
+    const kl=sstep(.64,.71,q), el=easeBack(kl); lab.visible=kl>0;
+    lab.position.set(lerp(2.6,.6,el),lerp(3.6,H*.45,el),lerp(3.4,Dp/2+.018,el));
+    lab.rotation.set(lerp(-.9,0,kl),lerp(1.1,0,kl),lerp(.7,0,kl)); lab.scale.setScalar(lerp(1.8,1,el));
+    const ks=sstep(.71,.74,q); stamp.visible=ks>0; stamp.scale.setScalar(ks>0?lerp(1.7,1,easeBack(ks)):.001); stM.opacity=ks;
+    const kz=sstep(.73,.78,q); laser.visible=kz>0&&kz<1; laser.position.set(.6,H*.45+.28-kz*.56,Dp/2+.03);
+    // 5. départ
+    const k1=sstep(.78,.85,q), k2=sstep(.84,.9,q), k3=sstep(.9,1,q), e1=1-Math.pow(1-k1,3), e3=k3*k3;
+    P.visible=k1>0;
+    P.position.set(lerp(-18,hover.x,e1)+e3*36, lerp(8,hover.y,e1)+e3*11+Math.sin(t*1.6)*.06*(1-k3), lerp(-6,hover.z,e1)-e3*28);
+    P.rotation.set(lerp(.35,0,e1)-k3*.5, k3*.66, k3*.3);
+    C.position.y=lerp(0,4.5-.42-H-.08,k2); C.rotation.y=k2*1.4; C.scale.setScalar(Math.max(.001,1-sstep(.885,.9,q)));
+    const bh=Math.max(.05,P.position.y-.42); beam.position.set(P.position.x,bh/2,P.position.z); beam.scale.y=bh/3.9;
+    beamM.opacity=.3*sstep(.82,.845,q)*(1-sstep(.885,.9,q));
+    flash.intensity=laser.visible?2.5:0; flash.position.set(.6,C.position.y+H*.45,Dp/2+.6);
+    // traînées : points répartis derrière les bouts d'ailes
+    P.updateMatrixWorld(); tipL.set(.2,-.15,2.8).applyMatrix4(P.matrixWorld); tipR.set(.2,-.15,-2.8).applyMatrix4(P.matrixWorld);
+    const back=new THREE.Vector3(-1,0,0).transformDirection(P.matrixWorld);
+    for(let i=0;i<TR;i++){ const d=i*.25*k3*3; [tipL,tipR].forEach((tp,s)=>{ const o=(s*TR+i)*3; trailPos[o]=tp.x+back.x*d; trailPos[o+1]=tp.y+back.y*d; trailPos[o+2]=tp.z+back.z*d; }); }
+    trailGeo.attributes.position.needsUpdate=true; trail.visible=k3>.02;
+    // caméra : orbite lente le long du scroll
+    const th=-.55+q*1.25+smx*.12;
+    const Rr=lerp(11.5,9.6,sstep(.1,.6,q))*(mob?1.45:1)+sstep(.78,1,q)*5;
+    const cy=lerp(10.5,6.2,sstep(0,.2,q))-sstep(.42,.62,q)*2.4+sstep(.78,.95,q)*3.5;
+    tgt.set(0,lerp(.1,H*.55,sstep(.05,.2,q)),0); tgt.lerp(P.position,sstep(.8,.9,q)*.75);
+    if(!mob){ tgt.x-=Math.cos(th)*1.9; tgt.z+=Math.sin(th)*1.9; } else tgt.y-=1.1;
+    cam.position.set(Math.sin(th)*Rr,cy,Math.cos(th)*Rr); cam.lookAt(tgt);
+    r.render(sc,cam);
+  });
+}
+
+/* =========================================================
+   FOND 3D FIXE : la route du colis, pilotée par le scroll de toute la page
+   ========================================================= */
+function initBg(){
+  const cv=$('#bg'); const r=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,1.5)); r.outputEncoding=THREE.sRGBEncoding;
+  const sc=new THREE.Scene(); sc.fog=new THREE.FogExp2(0x121212,.045);
+  const cam=new THREE.PerspectiveCamera(62,1,.1,200);
+  sc.add(new THREE.HemisphereLight(0xfff1e0,0x241712,.75));
+  const dl=new THREE.DirectionalLight(0xfff0dc,.8); dl.position.set(3,6,4); sc.add(dl);
+  const camLight=new THREE.PointLight(0xe30613,1.3,14); sc.add(camLight);
+
+  const pts=[]; for(let i=0;i<=34;i++) pts.push(new THREE.Vector3(Math.sin(i*.55)*5+Math.sin(i*.21)*3, Math.cos(i*.43)*2.6+Math.sin(i*.17)*1.5, -i*10));
+  const curve=new THREE.CatmullRomCurve3(pts), FR=900, frames=curve.computeFrenetFrames(FR,false);
+  sc.add(new THREE.Mesh(new THREE.TubeGeometry(curve,1800,.014,6,false),new THREE.MeshBasicMaterial({color:0xff2424,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false})));
+  const lane=[]; for(let k=0;k<=FR;k++){ const p=curve.getPointAt(k/FR), b=frames.binormals[k]; lane.push(p.x+b.x*.9,p.y+b.y*.9,p.z+b.z*.9,p.x-b.x*.9,p.y-b.y*.9,p.z-b.z*.9); }
+  const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(lane,3));
+  sc.add(new THREE.Points(lg,new THREE.PointsMaterial({color:0xe7cfa7,size:.06,transparent:true,opacity:.55})));
+
+  const field=(count,mat,smin,smax,rmin,rmax)=>{
+    const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.7,.75),mat,count), data=[];
+    for(let i=0;i<count;i++){ const u=Math.random()*.995, k=Math.floor(u*FR), p=curve.getPointAt(u), a=Math.random()*Math.PI*2, rad=rmin+Math.random()*(rmax-rmin);
+      data.push({pos:p.clone().addScaledVector(frames.normals[k],Math.cos(a)*rad).addScaledVector(frames.binormals[k],Math.sin(a)*rad), s:smin+Math.random()*(smax-smin), rx:Math.random()*6, ry:Math.random()*6, vx:(Math.random()-.5)*.6, vy:(Math.random()-.5)*.6, bob:Math.random()*6}); }
+    sc.add(im); return {im,data};
+  };
+  const fields=[ field(340,new THREE.MeshStandardMaterial({map:plainTex(),roughness:.9}),.25,1,4.2,12), field(50,new THREE.MeshStandardMaterial({color:0xe30613,roughness:.5}),.15,.45,3.5,8) ];
+
+  const portals=[], ringM=new THREE.MeshBasicMaterial({color:0xe30613}), ring2M=new THREE.MeshBasicMaterial({color:0xe7cfa7,transparent:true,opacity:.3});
+  const dots=[]; for(let i=0;i<72;i++){ const a=i/72*Math.PI*2; dots.push(Math.cos(a)*4.1,Math.sin(a)*4.1,0); }
+  const dotG=new THREE.BufferGeometry(); dotG.setAttribute('position',new THREE.Float32BufferAttribute(dots,3));
+  for(let k=0;k<10;k++){ const u=.04+k*.1, g=new THREE.Group(); g.position.copy(curve.getPointAt(u)); g.lookAt(curve.getPointAt(Math.min(1,u+.002)));
+    const spin=new THREE.Group(); g.add(spin);
+    spin.add(new THREE.Mesh(new THREE.TorusGeometry(3.4,.022,8,160),ringM), new THREE.Mesh(new THREE.TorusGeometry(3.75,.01,6,160),ring2M), new THREE.Points(dotG,new THREE.PointsMaterial({color:0xe7cfa7,size:.09})));
+    const tick=new THREE.Mesh(new THREE.BoxGeometry(.5,.12,.05),ringM); tick.position.y=3.4; spin.add(tick);
+    sc.add(g); portals.push(spin); }
+
+  const dust=[]; for(let i=0;i<3000;i++){ const u=Math.random(), p=curve.getPointAt(u); dust.push(p.x+(Math.random()-.5)*20,p.y+(Math.random()-.5)*14,p.z+(Math.random()-.5)*6); }
+  const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.Float32BufferAttribute(dust,3));
+  sc.add(new THREE.Points(dg,new THREE.PointsMaterial({color:0xf6efe4,size:.035,transparent:true,opacity:.45,depthWrite:false})));
+
+  const plain=new THREE.MeshStandardMaterial({map:plainTex(),roughness:.9}), fm=new THREE.MeshStandardMaterial({map:frontTex(),roughness:.85}), sm=new THREE.MeshStandardMaterial({map:sideTex(),roughness:.9});
+  const parcel=new THREE.Mesh(new THREE.BoxGeometry(.95,.64,.7),[sm,plain,plain,plain,fm,plain]); sc.add(parcel);
+  document.fonts && document.fonts.ready.then(()=>{ fm.map=frontTex(); sm.map=sideTex(); fm.needsUpdate=sm.needsUpdate=true; });
+
+  let gs=0; const dummy=new THREE.Object3D(), right=new THREE.Vector3(), upv=new THREE.Vector3(), off=new THREE.Vector3(), look=new THREE.Vector3();
+  const finalEl=$('#final');
+  updaters.push((t)=>{
+    const heroEnd=sceneEl.offsetTop+sceneEl.offsetHeight-innerHeight, docH=document.documentElement.scrollHeight-innerHeight;
+    const g=clamp((scrollY-heroEnd)/Math.max(1,docH-heroEnd)); gs+=(g-gs)*.07;
+    const alpha=sstep(heroEnd-innerHeight*.5,heroEnd+innerHeight*.2,scrollY);
+    cv.style.opacity=(alpha*.75).toFixed(3);
+    const vr=vsec.getBoundingClientRect(), fr=finalEl.getBoundingClientRect();
+    const covered=(vr.top<=1&&vr.bottom>=innerHeight-1)||(fr.top<=1&&fr.bottom>=innerHeight-1);
+    if(alpha<.01||covered) return;
+    fit(r,cam,cv);
+    const u=.004+gs*.975, p=curve.getPointAt(u); look.copy(curve.getPointAt(Math.min(1,u+.02)));
+    cam.position.copy(p).add(off.set(smx*.6,1.25-smy*.3,0)); cam.lookAt(look); cam.rotateZ(Math.sin(u*22)*.14);
+    camLight.position.copy(cam.position);
+    right.set(1,0,0).applyQuaternion(cam.quaternion); upv.set(0,1,0).applyQuaternion(cam.quaternion);
+    const mob=innerWidth<860;
+    parcel.position.copy(curve.getPointAt(Math.min(.995,u+.013))).addScaledVector(right,mob?0:1.7).addScaledVector(upv,mob?-.9:-.55);
+    parcel.rotation.set(t*.35+u*30,t*.5+u*12,Math.sin(t)*.2); parcel.scale.setScalar(mob?.7:1);
+    fields.forEach(({im,data})=>{ data.forEach((d,i)=>{ dummy.position.copy(d.pos); dummy.position.y+=Math.sin(t*.6+d.bob)*.15;
+      dummy.rotation.set(d.rx+t*d.vx,d.ry+t*d.vy,0); dummy.scale.setScalar(d.s); dummy.updateMatrix(); im.setMatrixAt(i,dummy.matrix); }); im.instanceMatrix.needsUpdate=true; });
+    portals.forEach((sp,i)=>sp.rotation.z=t*.15*(i%2?1:-1));
+    r.render(sc,cam);
+  });
+}
+
+if(has3D){ try{ initBg(); }catch(e){ console.warn(e); } try{ initVoyage(); }catch(e){ console.warn(e); } try{ initHero(); }catch(e){ console.warn(e); } try{ initGlobe(); }catch(e){ console.warn(e); } try{ initRain(); }catch(e){ console.warn(e); } }
+
+/* =========================================================
+   Carrousel 3D piloté par le scroll (épinglé)
+   ========================================================= */
+(() => {
+  const sec=$('#specialites'), stage=$('#ringStage'), ring=$('#ring'), ps=$$('.p3d',ring), n=ps.length, step=360/n, cnt=$('#ringCount');
+  const names=ps.map(p=>$('h4',p).textContent);
+  let R=0, ang=0, off=0, drag=false, lx=0, lastIdx=-1;
+  const layout=()=>{ R=Math.round(ring.offsetWidth/2/Math.tan(Math.PI/n))+50; ps.forEach((p,i)=>p.style.transform=`rotateY(${i*step}deg) translateZ(${R}px)`); };
+  layout(); addEventListener('resize',layout);
+  stage.addEventListener('pointerdown',e=>{ drag=true; lx=e.clientX; stage.setPointerCapture(e.pointerId); });
+  stage.addEventListener('pointermove',e=>{ if(!drag) return; off+=(e.clientX-lx)*.3; lx=e.clientX; });
+  const up=()=>{ drag=false; }; stage.addEventListener('pointerup',up); stage.addEventListener('pointercancel',up);
+  const range=()=>sec.offsetHeight-innerHeight;
+  $('#rNext').onclick=()=>scrollBy({top:range()/(n-1),behavior:'smooth'});
+  $('#rPrev').onclick=()=>scrollBy({top:-range()/(n-1),behavior:'smooth'});
+  watch(stage,'ring');
+  updaters.push(()=>{
+    if(!vis.ring) return;
+    const r=sec.getBoundingClientRect(), rp=clamp(-r.top/(r.height-innerHeight));
+    if(!drag) off*=.94;
+    const target=-rp*step*(n-1)+off; ang+=(target-ang)*.12;
+    ring.style.transform=`translateZ(${-R}px) rotateX(${-4+smy*4}deg) rotateY(${ang}deg)`;
+    ps.forEach((p,i)=>{ const f=Math.cos((i*step+ang)*D); p.style.opacity=(.18+.82*Math.max(0,f)).toFixed(3); });
+    const idx=((Math.round(-ang/step)%n)+n)%n;
+    if(idx!==lastIdx){ lastIdx=idx; cnt.innerHTML=`<b>${String(idx+1).padStart(2,'0')}</b> / ${String(n).padStart(2,'0')} — ${names[idx]}`; }
+  });
+})();
+
+/* =========================================================
+   Simulateur de colis 3D (CSS)
+   ========================================================= */
+(() => {
+  const iL=$('#iL'), iW=$('#iW'), iH=$('#iH'), iK=$('#iK'), cbox=$('#cbox'), stage=$('#cfgStage');
+  const f={}; ['front','back','right','left','top','bottom'].forEach(k=>f[k]=$('.fc.'+k,cbox));
+  const nf=(v,d=1)=>v.toLocaleString('fr-FR',{maximumFractionDigits:d});
+  let ay=-32, vy=0, drag=false, lx=0, idle=0;
+  function update(){
+    const L=+iL.value, W=+iW.value, H=+iH.value, K=+iK.value;
+    const s=Math.min(3.4, 330/Math.max(L,W,H,1)) * (innerWidth<600?.75:1);
+    const l=L*s, w=W*s, h=H*s;
+    const set=(el,ww,hh,tr)=>{ el.style.width=ww+'px'; el.style.height=hh+'px'; el.style.transform=`translate(-50%,-50%) ${tr}`; };
+    set(f.front,l,h,`translateZ(${w/2}px)`); set(f.back,l,h,`rotateY(180deg) translateZ(${w/2}px)`);
+    set(f.right,w,h,`rotateY(90deg) translateZ(${l/2}px)`); set(f.left,w,h,`rotateY(-90deg) translateZ(${l/2}px)`);
+    set(f.top,l,w,`rotateX(90deg) translateZ(${h/2}px)`); set(f.bottom,l,w,`rotateX(-90deg) translateZ(${h/2}px)`);
+    f.front.textContent= l>70&&h>30 ? `${L} × ${H} cm`:''; f.right.textContent= w>50&&h>30 ? `${W} cm`:'';
+    cbox.dataset.s=s;
+    $('.cfg-floor').style.backgroundSize=`${20*s}px ${20*s}px`;
+    $('.cfg-floor').style.backgroundImage=`linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px)`;
+    $('.cfg-floor').style.transform=`rotateX(72deg) translateZ(${-h/2*1.05 - 10}px)`;
+    $('#vL').textContent=L; $('#vW').textContent=W; $('#vH').textContent=H; $('#vK').textContent=nf(K);
+    const vol=L*W*H/1000, vw=L*W*H/5000, tax=Math.max(K,vw);
+    $('#oV').textContent=nf(vol)+' L'; $('#oVW').textContent=nf(vw)+' kg'; $('#oK').textContent=nf(K)+' kg'; $('#oT').textContent=nf(tax)+' kg';
+    const big=Math.max(L,W,H);
+    const kind = big>120||tax>30 ? 'Envoi volumineux : messagerie ou palette à étudier ensemble.' : tax>10 ? 'Colis moyen : plusieurs options selon le délai souhaité.' : tax>2 ? 'Colis standard : le cas le plus courant.' : 'Petit colis : idéal en standard ou en express.';
+    const basis = vw>K ? `<b>facturé au volume</b> (${nf(vw)} kg) plutôt qu'au poids réel` : `<b>facturé au poids réel</b>`;
+    $('#verdict').innerHTML=`Votre colis serait ${basis}. ${kind}`;
+    const body=`Bonjour,\n\nJe souhaite un devis pour un envoi :\n- Dimensions : ${L} × ${W} × ${H} cm\n- Poids réel : ${nf(K)} kg\n- Destination : \n- Contenu : \n\nMerci !`;
+    $('#cfgCta').href=`mailto:mbe3481@mbefrance.fr?subject=${encodeURIComponent('Demande de devis – envoi de colis')}&body=${encodeURIComponent(body)}`;
+  }
+  [iL,iW,iH,iK].forEach(i=>i.addEventListener('input',update));
+  $$('.presets button').forEach(b=>b.addEventListener('click',()=>{ const [a,c,d,e]=b.dataset.p.split(','); iL.value=a; iW.value=c; iH.value=d; iK.value=e; update(); }));
+  stage.addEventListener('pointerdown',e=>{ drag=true; lx=e.clientX; stage.setPointerCapture(e.pointerId); });
+  stage.addEventListener('pointermove',e=>{ if(!drag) return; vy=(e.clientX-lx)*.4; ay+=vy; lx=e.clientX; idle=0; });
+  const up=()=>drag=false; stage.addEventListener('pointerup',up); stage.addEventListener('pointercancel',up);
+  update(); watch(stage,'cfg');
+  updaters.push((t,dt)=>{ if(!vis.cfg) return; idle+=dt; if(!drag){ ay+=vy; vy*=.92; if(idle>2) ay+=dt*14; } cbox.style.transform=`rotateX(${-20-smy*6}deg) rotateY(${ay}deg)`; });
+})();
+
+/* =========================================================
+   Impression (éventail) + domiciliation (carte qui pivote)
+   ========================================================= */
+(() => {
+  const fs=$('#fanStage'), fan=$('#fan'), flip=$('#flip');
+  new IntersectionObserver(([e])=>fs.classList.toggle('open',e.isIntersecting),{threshold:.55}).observe(fs);
+  fs.addEventListener('pointermove',e=>{ const r=fs.getBoundingClientRect(); const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5; fan.style.transform=`rotateY(${x*18}deg) rotateX(${-y*14}deg)`; });
+  fs.addEventListener('pointerleave',()=>fan.style.transform='');
+  let hover=false; flip.addEventListener('pointerenter',()=>{hover=true; flip.classList.add('on');}); flip.addEventListener('pointerleave',()=>{hover=false;});
+  flip.addEventListener('click',()=>flip.classList.toggle('on'));
+  watch(flip,'flip'); setInterval(()=>{ if(vis.flip && !hover) flip.classList.toggle('on'); },3600);
+})();
+
+/* =========================================================
+   Stats, reveal, tilt, carte parcours, curseur, magnétisme
+   ========================================================= */
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:.15});
+$$('.reveal').forEach((el,i)=>{ el.style.transitionDelay=(i%4)*80+'ms'; io.observe(el); });
+const sio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting) return; sio.unobserve(e.target); e.target.classList.add('in');
+  const b=$('b',e.target), to=+b.dataset.to, sup=b.querySelector('sup'), supH=sup?sup.outerHTML:'', t0=performance.now();
+  (function step(){ const k=clamp((performance.now()-t0)/1400); b.innerHTML=Math.round(to*(1-Math.pow(1-k,3)))+supH; if(k<1) requestAnimationFrame(step); })();
+}),{threshold:.4});
+$$('.stat').forEach((s,i)=>{ s.style.transitionDelay=i*120+'ms'; sio.observe(s); });
+
+$$('[data-tilt]').forEach(card=>{
+  card.addEventListener('pointermove',e=>{ const r=card.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+    card.style.transform=`rotateY(${(x-.5)*14}deg) rotateX(${(.5-y)*14}deg)`; card.style.setProperty('--mx',x*100+'%'); card.style.setProperty('--my',y*100+'%'); });
+  card.addEventListener('pointerleave',()=>card.style.transform='');
+});
+
+
+if(fine){
+  const ring=$('#cring'); let rx=cx, ry=cy;
+  updaters.push(()=>{ rx+=(cx-rx)*.18; ry+=(cy-ry)*.18; ring.style.transform=`translate(${rx}px,${ry}px)`; });
+  document.addEventListener('pointerover',e=>ring.classList.toggle('big',!!e.target.closest('a,button,[data-tilt],.globe-wrap,.ring-stage,.cfg-stage,.flip,summary')));
+  $$('.btn').forEach(b=>{
+    b.addEventListener('pointermove',e=>{ const r=b.getBoundingClientRect(); b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.22}px,${(e.clientY-r.top-r.height/2)*.35}px)`; });
+    b.addEventListener('pointerleave',()=>b.style.transform='');
+  });
+}
+
+/* =========================================================
+   Avis (extraits verbatim d'avis Google publics)
+   ========================================================= */
+const reviews=[
+  ['Excellente agence, merci pour l\'accueil et le professionnalisme !','Wilfried V.'],
+  ['Très bonne expérience, service chaleureux et soigné, adresse à recommander','Amina D.'],
+  ['Une équipe sérieuse, professionnelle, gentille et surtout à l’écoute.','Fourali M.'],
+  ['Vrais professionnels, à l\'écoute et arrangeant pour trouver des solutions adaptées.','Louis L.'],
+  ['Très bonne expérience, très bon accueil très bonne prestation et prix compétitifs.','Christine D.'],
+  ['Rémy was very responsive, flexible and fast with everything.','Deividas D.'],
+  ['Mon colis […] était parfaitement emballé, avec un soin particulier apporté à la protection des objets.','Wilfried N.'],
+  ['Très belle expérience et un relationnel client impeccable.','Mahfoud K.']
+];
+$('#rvTrack').innerHTML=[...reviews,...reviews].map(([q,n])=>`<div class="rv"><div class="stars">★★★★★</div><p>“${q}”</p><small>${n} · Google</small></div>`).join('');
+
+/* =========================================================
+   Horaires + statut (heure de Paris)
+   ========================================================= */
+const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const sched=d=>d<5?[[570,750],[840,1080]]:[];
+const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+const today=(now.getDay()+6)%7, mins=now.getHours()*60+now.getMinutes();
+const fmt=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+$('#hours').innerHTML=days.map((d,i)=>{ const s=sched(i); return `<div class="${i===today?'today':''}"><span>${d}</span><span>${s.length?s.map(([a,b])=>fmt(a)+'–'+fmt(b)).join(' · '):'Fermé'}</span></div>`; }).join('');
+const cur=sched(today).find(([a,b])=>mins>=a&&mins<b), st=$('#status');
+let label='Fermé actuellement';
+if(cur){ label=`Ouvert · ferme à ${fmt(cur[1])}`; st.classList.add('open'); }
+else { const nx=sched(today).find(([a])=>a>mins); if(nx) label=`Fermé · réouvre à ${fmt(nx[0])}`; }
+$('span',st).textContent=label;
+
+/* ---------------- boucle principale ---------------- */
+let last=performance.now();
+(function loop(now){
+  const dt=Math.min(.05,(now-last)/1000)||0; last=now; const t=now/1000;
+  smx+=(mx-smx)*.05; smy+=(my-smy)*.05;
+  for(const u of updaters){ try{ u(t,dt); }catch(e){ console.error(e); } }
+  requestAnimationFrame(loop);
+})(performance.now());
+})();
+</script>
+</body>
+</html>
